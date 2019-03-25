@@ -9,7 +9,7 @@ import (
 func CreateJWTToken(claims jwt.MapClaims, secret []byte) (string, error) {
 	claims["timestamp"] = time.Now().Unix()
 
-	// Create a new token object, specifying signing method and the claims
+	// CreateToken a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 

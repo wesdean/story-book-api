@@ -1,7 +1,11 @@
 package models_test
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/wesdean/story-book-api/database/models"
+	"github.com/wesdean/story-book-api/utils"
+	"gopkg.in/guregu/null.v3"
+	"os"
 	"testing"
 )
 
@@ -132,6 +136,45 @@ func TestUserStore_GetUser(t *testing.T) {
 
 		if user != nil {
 			t.Errorf("expected nil, got %v", user)
+			return
+		}
+	})
+}
+
+func TestUserStore_AuthenticateUser(t *testing.T) {
+	setupEnvironment(t)
+	setupTest(t)
+	defer tearDown(t)
+
+	t.Run("Successful authentication", func(t *testing.T) {
+		user := &models.User{
+			Id:       null.IntFrom(2),
+			Username: null.StringFrom("owner"),
+		}
+
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": user.Id},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		userStore := models.NewUserStore(db)
+		authUser, err := userStore.AuthenticateUser(token)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if authUser.User.Id != user.Id {
+			t.Errorf("expected %v, got %v", user.Id, authUser.User.Id)
+			return
+		}
+
+		if authUser.Timestamp <= 0 {
+			t.Errorf("expected >0, got %v", authUser.Timestamp)
 			return
 		}
 	})

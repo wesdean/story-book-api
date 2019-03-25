@@ -1,8 +1,12 @@
 package models
 
 import (
+	"errors"
 	"github.com/wesdean/story-book-api/database"
+	"github.com/wesdean/story-book-api/utils"
 	"gopkg.in/guregu/null.v3"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -15,6 +19,11 @@ type User struct {
 	Username  null.String
 	CreatedOn null.Time
 	LastLogin null.Time
+}
+
+type AuthenticatedUser struct {
+	User      *User
+	Timestamp int
 }
 
 func NewUserStore(db *database.Database) *UserStore {
@@ -159,4 +168,48 @@ func (store *UserStore) GetUser(options *UserQueryOptions) (*User, error) {
 		return users[0], nil
 	}
 	return nil, nil
+}
+
+func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, error) {
+	if token == "" {
+		return nil, errors.New("Missing authentication token")
+	}
+
+	claims, err := utils.ParseJWTToken(token, []byte(os.Getenv("AUTH_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+
+	userId, ok := claims["user_id"].(float64)
+	if !ok {
+		return nil, errors.New("Invalid user in token")
+	}
+
+	timestamp, ok := claims["timestamp"].(float64)
+	if !ok {
+		return nil, errors.New("Invalid timestamp in token")
+	}
+
+	authTimeout, err := strconv.Atoi(os.Getenv("AUTH_TIMEOUT"))
+	if err != nil {
+		return nil, err
+	}
+
+	if (time.Now().Unix() - int64(timestamp)) > int64(authTimeout) {
+		return nil, errors.New("Token expired")
+	}
+
+	user, err := store.GetUser(NewUserQueryOptions().Id(int(userId)))
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil || user.Id.ValueOrZero() <= 0 {
+		return nil, errors.New("Invalid user")
+	}
+
+	return &AuthenticatedUser{
+		User:      user,
+		Timestamp: int(timestamp),
+	}, nil
 }

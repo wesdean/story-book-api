@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"github.com/justinas/alice"
-	"github.com/wesdean/story-book-api/controllers"
 	"log"
 	"net/http"
 	"os"
@@ -24,7 +22,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.Handle("/", alice.New().ThenFunc(controllers.HealthCheckController{}.Index))
+	BindRoutes(r)
 
 	httpPort := os.Getenv("HTTP_PORT")
 	log.Printf("Server listening on port %s\n", httpPort)

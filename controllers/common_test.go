@@ -1,4 +1,4 @@
-package models_test
+package controllers_test
 
 import (
 	"github.com/wesdean/story-book-api/database"
@@ -36,7 +36,9 @@ func tearDown(t *testing.T) func() {
 }
 
 func setupEnvironment(t *testing.T) {
-	err := os.Setenv("AUTH_SECRET", "testing")
+	var err error
+
+	err = os.Setenv("AUTH_SECRET", "testing")
 	if err != nil {
 		t.Fatal(err)
 	}

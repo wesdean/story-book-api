@@ -20,18 +20,10 @@ func authTestHandler() http.HandlerFunc {
 	return http.HandlerFunc(fn)
 }
 
-func setupEnvironment(t *testing.T) {
-	err := os.Setenv("AUTH_TIMEOUT", "3")
-	if err != nil {
-		t.Error(t)
-		return
-	}
-}
-
 func TestAuthenticationtMiddleware(t *testing.T) {
 	setupEnvironment(t)
 
-	t.Run("Successful authorization", func(t *testing.T) {
+	t.Run("Successful authentication", func(t *testing.T) {
 		authHandler := middlewares.AuthenticationtMiddleware(authTestHandler())
 
 		testServer := httptest.NewServer(authHandler)

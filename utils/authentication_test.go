@@ -17,3 +17,23 @@ func TestCreateJWTToken(t *testing.T) {
 		return
 	}
 }
+
+func TestParseJWTToken(t *testing.T) {
+	token, err := utils.CreateJWTToken(jwt.MapClaims{}, []byte("testing"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	claims, err := utils.ParseJWTToken(token, []byte("testing"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	timestamp := claims["timestamp"].(float64)
+	if timestamp <= 0 {
+		t.Errorf("expected > 0, got %v", timestamp)
+		return
+	}
+}
