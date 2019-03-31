@@ -1,0 +1,23 @@
+{
+  "name": "story-book-api-db",
+  "version": "0.0.1",
+  "description": "Database management for the Story Book API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wesdean/story-book-api.git"
+  },
+  "author": "wes@geekdaddydean.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wesdean/story-book-api/issues"
+  },
+  "homepage": "https://github.com/wesdean/story-book-api#readme",
+  "dependencies": {
+    "knex": "^0.16.3",
+    "pg": "^7.9.0"
+  }
+}

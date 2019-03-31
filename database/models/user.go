@@ -40,17 +40,17 @@ type UserQueryOptions struct {
 	usePassword bool
 	password    string
 
-	useCreatedOnStart bool
-	createdOnStart    time.Time
+	useCreatedAtStart bool
+	createdAtStart    time.Time
 
-	useCreatedOnEnd bool
-	createdOnEnd    time.Time
+	useCreatedAtEnd bool
+	createdAtEnd    time.Time
 
-	useLastLoginStart bool
-	lastLoginStart    time.Time
+	useUpdatedAtStart bool
+	updatedAtStart    time.Time
 
-	useLastLoginEnd bool
-	lastLoginEnd    time.Time
+	useUpdatedAtEnd bool
+	updatedAtEnd    time.Time
 }
 
 func NewUserQueryOptions() *UserQueryOptions {
@@ -75,28 +75,28 @@ func (options *UserQueryOptions) Password(password string) *UserQueryOptions {
 	return options
 }
 
-func (options *UserQueryOptions) CreatedOn(createdOnStart *time.Time, createdOnEnd *time.Time) *UserQueryOptions {
-	if createdOnStart != nil {
-		options.useCreatedOnStart = true
-		options.createdOnStart = *createdOnStart
+func (options *UserQueryOptions) CreatedAt(createdAtStart *time.Time, createdAtEnd *time.Time) *UserQueryOptions {
+	if createdAtStart != nil {
+		options.useCreatedAtStart = true
+		options.createdAtStart = *createdAtStart
 	}
 
-	if createdOnEnd != nil {
-		options.useCreatedOnEnd = true
-		options.createdOnEnd = *createdOnEnd
+	if createdAtEnd != nil {
+		options.useCreatedAtEnd = true
+		options.createdAtEnd = *createdAtEnd
 	}
 	return options
 }
 
-func (options *UserQueryOptions) LastLogin(lastLoginStart *time.Time, lastLoginEnd *time.Time) *UserQueryOptions {
-	if lastLoginStart != nil {
-		options.useLastLoginStart = true
-		options.lastLoginStart = *lastLoginStart
+func (options *UserQueryOptions) UpdatedAt(updatedAtStart *time.Time, updatedAtEnd *time.Time) *UserQueryOptions {
+	if updatedAtStart != nil {
+		options.useUpdatedAtStart = true
+		options.updatedAtStart = *updatedAtStart
 	}
 
-	if lastLoginEnd != nil {
-		options.useLastLoginEnd = true
-		options.lastLoginEnd = *lastLoginEnd
+	if updatedAtEnd != nil {
+		options.useUpdatedAtEnd = true
+		options.updatedAtEnd = *updatedAtEnd
 	}
 	return options
 }
@@ -107,16 +107,16 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 	}
 
 	var err error
-	sqlQuery := "select id, username, created_on, last_login " +
+	sqlQuery := "select id, username, created_at, updated_at " +
 		"from users " +
 		"where" +
 		"($1 = false or ($1 = true and id = $2)) " +
 		"and ($3 = false or ($3 = true and username = $4)) " +
 		"and ($5 = false or ($5 = true and password = $6)) " +
-		"and ($7 = false or ($7 = true and created_on >= $8)) " +
-		"and ($9 = false or ($9 = true and created_on <= $10)) " +
-		"and ($11 = false or ($11 = true and last_login >= $12)) " +
-		"and ($13 = false or ($13 = true and last_login <= $14))"
+		"and ($7 = false or ($7 = true and created_at >= $8)) " +
+		"and ($9 = false or ($9 = true and created_at <= $10)) " +
+		"and ($11 = false or ($11 = true and updated_at >= $12)) " +
+		"and ($13 = false or ($13 = true and updated_at <= $14))"
 	args := []interface{}{
 		options.useId,
 		options.id,
@@ -124,14 +124,14 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 		options.username,
 		options.usePassword,
 		options.password,
-		options.useCreatedOnStart,
-		options.createdOnStart,
-		options.useCreatedOnEnd,
-		options.createdOnEnd,
-		options.useLastLoginStart,
-		options.lastLoginStart,
-		options.useLastLoginEnd,
-		options.lastLoginEnd,
+		options.useCreatedAtStart,
+		options.createdAtStart,
+		options.useCreatedAtEnd,
+		options.createdAtEnd,
+		options.useUpdatedAtStart,
+		options.updatedAtStart,
+		options.useUpdatedAtEnd,
+		options.updatedAtEnd,
 	}
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {

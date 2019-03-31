@@ -1,0 +1,28 @@
+version: "3.7"
+
+networks:
+  story-book:
+
+services:
+  api:
+    container_name: story-book-api
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      args:
+        - "code_dir=/go/src/github.com/wesdean/story-book-api"
+    ports:
+      - 3000:3000
+    networks:
+      - story-book
+    links:
+      - db:database
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    container_name: story-book-db
+    ports:
+      - 5432:5432
+    networks:
+      - story-book

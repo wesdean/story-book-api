@@ -5,7 +5,7 @@ if [ "$#" -gt 1 ]; then
     migration_dir=$1
     filename=$2
 else
-    migration_dir=migrations
+    migration_dir=sql/migrations
     filename=$1
 fi
 
