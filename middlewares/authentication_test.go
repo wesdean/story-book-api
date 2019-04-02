@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func authTestHandler() http.HandlerFunc {
+func authenticationTestHandler() http.HandlerFunc {
 	fn := func(rw http.ResponseWriter, req *http.Request) {
 		utils.EncodeJSON(rw, "Authentication successful")
 	}
@@ -24,7 +24,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 	setupEnvironment(t)
 
 	t.Run("Successful authentication", func(t *testing.T) {
-		authHandler := middlewares.AuthenticationtMiddleware(authTestHandler())
+		authHandler := middlewares.AuthenticationtMiddleware(authenticationTestHandler())
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -38,6 +38,10 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 		authToken, err := utils.CreateJWTToken(jwt.MapClaims{}, []byte(""))
 
 		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 		req.Header.Set("Authorization", authToken)
 
 		resp, err := client.Do(req)
@@ -62,7 +66,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 	})
 
 	t.Run("Missing authorization header return 401", func(t *testing.T) {
-		authHandler := middlewares.AuthenticationtMiddleware(authTestHandler())
+		authHandler := middlewares.AuthenticationtMiddleware(authenticationTestHandler())
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -99,7 +103,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 			return
 		}
 
-		authHandler := middlewares.AuthenticationtMiddleware(authTestHandler())
+		authHandler := middlewares.AuthenticationtMiddleware(authenticationTestHandler())
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -113,6 +117,10 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 		authToken, err := utils.CreateJWTToken(jwt.MapClaims{}, []byte(""))
 
 		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 		req.Header.Set("Authorization", authToken)
 
 		resp, err := client.Do(req)

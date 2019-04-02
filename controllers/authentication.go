@@ -7,6 +7,7 @@ import (
 	"github.com/wesdean/story-book-api/database"
 	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
+	"log"
 	"net/http"
 	"os"
 )
@@ -49,7 +50,12 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 		utils.EncodeJSONError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer db.Rollback()
+	defer (func() {
+		err := db.Rollback()
+		if err != nil {
+			log.Panic(err)
+		}
+	})()
 
 	userStore := models.NewUserStore(db)
 	options := models.NewUserQueryOptions().
