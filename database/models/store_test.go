@@ -6,9 +6,6 @@ import (
 )
 
 func TestNewModel(t *testing.T) {
-	setupTest(t)
-	defer tearDown(t)
-
 	model := models.NewStore(db)
 	err := model.Ping()
 	if err != nil {

@@ -10,9 +10,6 @@ import (
 )
 
 func TestUserStore_GetUsers(t *testing.T) {
-	setupTest(t)
-	defer tearDown(t)
-
 	t.Run("Get all users", func(t *testing.T) {
 		userStore := models.NewUserStore(db)
 		users, err := userStore.GetUsers(nil)
@@ -143,8 +140,6 @@ func TestUserStore_GetUser(t *testing.T) {
 
 func TestUserStore_AuthenticateUser(t *testing.T) {
 	setupEnvironment(t)
-	setupTest(t)
-	defer tearDown(t)
 
 	t.Run("Successful authentication", func(t *testing.T) {
 		user := &models.User{
