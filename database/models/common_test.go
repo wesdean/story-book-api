@@ -1,7 +1,9 @@
 package models_test
 
 import (
+	"errors"
 	"fmt"
+	"github.com/wesdean/story-book-api/app_config"
 	"github.com/wesdean/story-book-api/database"
 	"io/ioutil"
 	"os"
@@ -9,16 +11,35 @@ import (
 )
 
 var db *database.Database
+var config *app_config.Config
 
 func TestMain(m *testing.M) {
 	var err error
+
+	config, err = app_config.NewConfigFromFile("../../app_config/test.config.json")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = config.Validate()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	db, err = database.NewDatabase(nil)
+	if err == nil && db == nil {
+		err = errors.New("db is nil")
+	}
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	err = db.Begin()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-		return
 	}
 
 	m.Run()
@@ -27,14 +48,12 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-		return
 	}
 
 	err = db.GetDB().Close()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-		return
 	}
 }
 
@@ -51,7 +70,7 @@ func setupEnvironment(t *testing.T) {
 }
 
 func seedDb() {
-	sqlFile, err := ioutil.ReadFile("../sql/test_seed_models.sql")
+	sqlFile, err := ioutil.ReadFile(config.Models.DatabaseSeed)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

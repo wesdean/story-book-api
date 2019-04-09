@@ -16,3 +16,4 @@
 story-book-api
 
 database/node_modules
+app_config/*.config.json
