@@ -224,3 +224,21 @@ func (store *UserStore) DisableUser(userId int) error {
 	_, err := store.db.Tx.Exec(sqlQuery, userId)
 	return err
 }
+
+func (store *UserStore) EnableUser(userId int) error {
+	sqlQuery := "update users set disabled = false where id = $1"
+	_, err := store.db.Tx.Exec(sqlQuery, userId)
+	return err
+}
+
+func (store *UserStore) ArchiveUser(userId int) error {
+	sqlQuery := "update users set archived = true where id = $1"
+	_, err := store.db.Tx.Exec(sqlQuery, userId)
+	return err
+}
+
+func (store *UserStore) UnarchiveUser(userId int) error {
+	sqlQuery := "update users set archived = false where id = $1"
+	_, err := store.db.Tx.Exec(sqlQuery, userId)
+	return err
+}

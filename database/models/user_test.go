@@ -20,7 +20,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 			return
 		}
 
-		expected := 5
+		expected := 7
 		if len(users) != expected {
 			t.Errorf("expected %v, got %v", expected, len(users))
 			return
@@ -196,6 +196,75 @@ func TestUserStore_DisableUser(t *testing.T) {
 
 	if !user.Disabled {
 		t.Error("expected true, got false")
+		return
+	}
+}
+
+func TestUserStore_EnableUser(t *testing.T) {
+	seedDb()
+
+	userId := 6
+
+	userStore := models.NewUserStore(db)
+	err := userStore.EnableUser(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	user, err := userStore.GetUser(models.NewUserQueryOptions().Id(userId))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if user.Disabled {
+		t.Error("expected false, got true")
+		return
+	}
+}
+
+func TestUserStore_ArchiveUser(t *testing.T) {
+	seedDb()
+
+	userId := 4
+
+	userStore := models.NewUserStore(db)
+	err := userStore.ArchiveUser(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	user, err := userStore.GetUser(models.NewUserQueryOptions().Id(userId))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if !user.Archived {
+		t.Error("expected true, got false")
+		return
+	}
+}
+
+func TestUserStore_UnarchiveUser(t *testing.T) {
+	seedDb()
+
+	userId := 7
+
+	userStore := models.NewUserStore(db)
+	err := userStore.UnarchiveUser(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	user, err := userStore.GetUser(models.NewUserQueryOptions().Id(userId))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if user.Archived {
+		t.Error("expected false, got true")
 		return
 	}
 }
