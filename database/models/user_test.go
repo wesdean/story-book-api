@@ -11,6 +11,8 @@ import (
 
 func TestUserStore_GetUsers(t *testing.T) {
 	t.Run("Get all users", func(t *testing.T) {
+		seedDb()
+
 		userStore := models.NewUserStore(db)
 		users, err := userStore.GetUsers(nil)
 		if err != nil {
@@ -173,4 +175,27 @@ func TestUserStore_AuthenticateUser(t *testing.T) {
 			return
 		}
 	})
+}
+
+func TestUserStore_DisableUser(t *testing.T) {
+	seedDb()
+
+	userId := 4
+
+	userStore := models.NewUserStore(db)
+	err := userStore.DisableUser(userId)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	user, err := userStore.GetUser(models.NewUserQueryOptions().Id(userId))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if !user.Disabled {
+		t.Error("expected true, got false")
+		return
+	}
 }

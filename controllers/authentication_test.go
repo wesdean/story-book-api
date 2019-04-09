@@ -17,9 +17,6 @@ import (
 )
 
 func TestAuthenticationController_CreateToken(t *testing.T) {
-	setupTest(t)
-	defer tearDown(t)
-
 	t.Run("Return token on success", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
@@ -138,8 +135,6 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 
 func TestAuthenticationController_ValidateToken(t *testing.T) {
 	setupEnvironment(t)
-	setupTest(t)
-	defer tearDown(t)
 
 	t.Run("Return true on valid token", func(t *testing.T) {
 		handler := alice.New(
@@ -165,6 +160,10 @@ func TestAuthenticationController_ValidateToken(t *testing.T) {
 		u.WriteString("/authentication")
 
 		req, err := http.NewRequest("GET", u.String(), nil)
+		if req == nil {
+			t.Error("expected not nil, got nil")
+			return
+		}
 		req.Header.Set("Authorization", token)
 
 		resp, err := client.Do(req)

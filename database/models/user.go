@@ -19,6 +19,8 @@ type User struct {
 	Username  null.String
 	CreatedOn null.Time
 	LastLogin null.Time
+	Disabled  bool
+	Archived  bool
 }
 
 type AuthenticatedUser struct {
@@ -107,7 +109,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 	}
 
 	var err error
-	sqlQuery := "select id, username, created_at, updated_at " +
+	sqlQuery := "select id, username, created_at, updated_at, disabled, archived " +
 		"from users " +
 		"where" +
 		"($1 = false or ($1 = true and id = $2)) " +
@@ -133,6 +135,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 		options.useUpdatedAtEnd,
 		options.updatedAtEnd,
 	}
+
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
 		return nil, err
@@ -141,7 +144,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 		err = rows.Close()
 	})()
 
-	users := []*User{}
+	var users []*User
 	for rows.Next() {
 		user := User{}
 		err = rows.Scan(
@@ -149,6 +152,8 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 			&user.Username,
 			&user.CreatedOn,
 			&user.LastLogin,
+			&user.Disabled,
+			&user.Archived,
 		)
 		if err != nil {
 			return nil, err
@@ -172,7 +177,7 @@ func (store *UserStore) GetUser(options *UserQueryOptions) (*User, error) {
 
 func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, error) {
 	if token == "" {
-		return nil, errors.New("Missing authentication token")
+		return nil, errors.New("missing authentication token")
 	}
 
 	claims, err := utils.ParseJWTToken(token, []byte(os.Getenv("AUTH_SECRET")))
@@ -182,12 +187,12 @@ func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, erro
 
 	userId, ok := claims["user_id"].(float64)
 	if !ok {
-		return nil, errors.New("Invalid user in token")
+		return nil, errors.New("invalid user in token")
 	}
 
 	timestamp, ok := claims["timestamp"].(float64)
 	if !ok {
-		return nil, errors.New("Invalid timestamp in token")
+		return nil, errors.New("invalid timestamp in token")
 	}
 
 	authTimeout, err := strconv.Atoi(os.Getenv("AUTH_TIMEOUT"))
@@ -196,7 +201,7 @@ func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, erro
 	}
 
 	if (time.Now().Unix() - int64(timestamp)) > int64(authTimeout) {
-		return nil, errors.New("Token expired")
+		return nil, errors.New("ioken expired")
 	}
 
 	user, err := store.GetUser(NewUserQueryOptions().Id(int(userId)))
@@ -205,11 +210,17 @@ func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, erro
 	}
 
 	if user == nil || user.Id.ValueOrZero() <= 0 {
-		return nil, errors.New("Invalid user")
+		return nil, errors.New("invalid user")
 	}
 
 	return &AuthenticatedUser{
 		User:      user,
 		Timestamp: int(timestamp),
 	}, nil
+}
+
+func (store *UserStore) DisableUser(userId int) error {
+	sqlQuery := "update users set disabled = true where id = $1"
+	_, err := store.db.Tx.Exec(sqlQuery, userId)
+	return err
 }
