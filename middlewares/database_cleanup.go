@@ -11,6 +11,7 @@ import (
 func DatabaseCleanupMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := logging.GetLoggerFromRequest(r)
+		logging.Log(logger, logging.LOGLEVEL_INFO, "-- test")
 		dbValue, ok := context.GetOk(r, "DB")
 		if ok {
 			db := dbValue.(*database.Database)

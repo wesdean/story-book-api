@@ -35,6 +35,7 @@ func LoggingMiddleware(h http.Handler) http.Handler {
 
 		context.Set(r, "Logger", logger)
 
+		AppendCleanups(r, LoggingCleanupMiddleware)
 		h.ServeHTTP(w, r)
 	})
 	return LoggingCleanupMiddleware(hFunc)

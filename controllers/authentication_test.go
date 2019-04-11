@@ -137,11 +137,10 @@ func TestAuthenticationController_ValidateToken(t *testing.T) {
 	setupEnvironment(t)
 
 	t.Run("Return true on valid token", func(t *testing.T) {
+
 		handler := alice.New(
-			middlewares.ConfigMiddleware,
-			middlewares.LoggingMiddleware,
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.AuthenticationController{}.ValidateToken)
+		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.ValidateToken))
 
 		token, err := utils.CreateJWTToken(
 			jwt.MapClaims{"user_id": 2},
