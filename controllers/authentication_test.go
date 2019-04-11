@@ -138,6 +138,8 @@ func TestAuthenticationController_ValidateToken(t *testing.T) {
 
 	t.Run("Return true on valid token", func(t *testing.T) {
 		handler := alice.New(
+			middlewares.ConfigMiddleware,
+			middlewares.LoggingMiddleware,
 			middlewares.DatabaseMiddleware,
 		).ThenFunc(controllers.AuthenticationController{}.ValidateToken)
 

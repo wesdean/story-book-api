@@ -18,6 +18,14 @@
   version = "v3.2.0"
 
 [[projects]]
+  digest = "1:ebdeb808fe6861df1eaa262006a879bdbed826dd51c343bd5e681045e194997c"
+  name = "github.com/google/logger"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7047ffcb7339f3f59be32de74a92217cb17cb40c"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -69,6 +77,18 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:367c06b4431b59a8b0276786182b901ef60ff06f0221f5ed27110fa9768ad72a"
+  name = "golang.org/x/sys"
+  packages = [
+    "windows",
+    "windows/registry",
+    "windows/svc/eventlog",
+  ]
+  pruneopts = "UT"
+  revision = "0ad05ae3009d6413d3363aa09b350b2ec37daf09"
+
+[[projects]]
   digest = "1:a4b04b5314d49a67ad022fa7693453ee2b823ab99314f52fa3930ed31085dfef"
   name = "gopkg.in/guregu/null.v3"
   packages = ["."]
@@ -82,6 +102,7 @@
   input-imports = [
     "github.com/andreyvit/diff",
     "github.com/dgrijalva/jwt-go",
+    "github.com/google/logger",
     "github.com/gorilla/context",
     "github.com/gorilla/mux",
     "github.com/joho/godotenv",

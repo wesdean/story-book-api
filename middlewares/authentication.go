@@ -22,30 +22,30 @@ func AuthenticationtMiddleware(h http.Handler) http.Handler {
 
 		authTimeout, err := strconv.Atoi(os.Getenv("AUTH_TIMEOUT"))
 		if err != nil {
-			utils.EncodeJSONError(w, "Invaild authentication timeout", http.StatusInternalServerError)
+			utils.EncodeJSONErrorWithLogging(r, w, "invaild authentication timeout", http.StatusInternalServerError)
 			return
 		}
 
 		if tokenString == "" {
-			utils.EncodeJSONError(w, "Invalid authentication token", http.StatusUnauthorized)
+			utils.EncodeJSONErrorWithLogging(r, w, "invalid authentication token", http.StatusUnauthorized)
 			return
 		}
 
 		claims, err := utils.ParseJWTToken(tokenString, secret)
 		if err != nil {
-			utils.EncodeJSONError(w, err.Error(), http.StatusUnauthorized)
+			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		tsFloat, ok := claims["timestamp"].(float64)
 		if !ok {
-			utils.EncodeJSONError(w, "Invalid authentication timestamp", http.StatusUnauthorized)
+			utils.EncodeJSONErrorWithLogging(r, w, "invalid authentication timestamp", http.StatusUnauthorized)
 			return
 		}
 		timestamp := int64(tsFloat)
 
 		if (time.Now().Unix() - timestamp) > int64(authTimeout) {
-			utils.EncodeJSONError(w, "Authentication has expired", http.StatusUnauthorized)
+			utils.EncodeJSONErrorWithLogging(r, w, "authentication has expired", http.StatusUnauthorized)
 			return
 		}
 

@@ -3,6 +3,7 @@ package middlewares_test
 import (
 	"bytes"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/justinas/alice"
 	"github.com/wesdean/story-book-api/middlewares"
 	"github.com/wesdean/story-book-api/utils"
 	"io/ioutil"
@@ -66,7 +67,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 	})
 
 	t.Run("Missing authorization header return 401", func(t *testing.T) {
-		authHandler := middlewares.AuthenticationtMiddleware(authenticationTestHandler())
+		authHandler := alice.New(middlewares.DatabaseMiddleware).Then(middlewares.AuthenticationtMiddleware(authenticationTestHandler()))
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -89,7 +90,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 			return
 		}
 
-		expected := `{"error":"Invalid authentication token"}`
+		expected := `{"error":"invalid authentication token"}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)
 			return
@@ -137,7 +138,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 			return
 		}
 
-		expected := `{"error":"Authentication has expired"}`
+		expected := `{"error":"authentication has expired"}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)
 			return

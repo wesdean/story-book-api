@@ -2,16 +2,46 @@ package controllers_test
 
 import (
 	"fmt"
+	"github.com/wesdean/story-book-api/app_config"
 	"github.com/wesdean/story-book-api/database"
+	"github.com/wesdean/story-book-api/logging"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
 var db *database.Database
+var config *app_config.Config
+var logger *logging.Logger
 
 func TestMain(m *testing.M) {
 	var err error
+
+	config, err = app_config.NewConfigFromFile("../app_config/test.config.json")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = config.Validate()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	logConfig, err := config.GetLogger("Config.Controllers.Logger")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	logger, err = logging.NewLogger(logConfig)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer logging.CloseLogger(logger)
+	logger.Info("Setting up tests")
+
 	db, err = database.NewDatabase(nil)
 
 	err = db.Begin()
@@ -37,11 +67,31 @@ func TestMain(m *testing.M) {
 		return
 	}
 
+	logger.Info("Running tests")
 	m.Run()
+
+	logger.Info("Cleaning up tests")
+	err = db.Rollback()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	err = db.GetDB().Close()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	logger.Info("Tests completed")
 }
 
 func setupEnvironment(t *testing.T) {
-	err := os.Setenv("AUTH_SECRET", "testing")
+	var err error
+
+	err = os.Setenv("CONFIG_FILENAME", "../app_config/test.config.json")
+
+	err = os.Setenv("AUTH_SECRET", "testing")
 	if err != nil {
 		t.Fatal(err)
 	}

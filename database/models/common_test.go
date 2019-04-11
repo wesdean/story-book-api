@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/wesdean/story-book-api/app_config"
 	"github.com/wesdean/story-book-api/database"
+	"github.com/wesdean/story-book-api/logging"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -12,6 +13,7 @@ import (
 
 var db *database.Database
 var config *app_config.Config
+var logger *logging.Logger
 
 func TestMain(m *testing.M) {
 	var err error
@@ -26,6 +28,20 @@ func TestMain(m *testing.M) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	logConfig, err := config.GetLogger("Config.Models.Logger")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	logger, err = logging.NewLogger(logConfig)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer logging.CloseLogger(logger)
+	logger.Info("Setting up tests")
 
 	db, err = database.NewDatabase(nil)
 	if err == nil && db == nil {
@@ -42,8 +58,10 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	logger.Info("Running tests")
 	m.Run()
 
+	logger.Info("Cleaning up tests")
 	err = db.Rollback()
 	if err != nil {
 		fmt.Println(err)
@@ -55,6 +73,8 @@ func TestMain(m *testing.M) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	logger.Info("Tests completed")
 }
 
 func setupEnvironment(t *testing.T) {

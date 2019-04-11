@@ -32,7 +32,7 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 	var reqData AuthenticationCreateTokenRequest
 	err := decoder.Decode(&reqData)
 	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusBadRequest)
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -41,13 +41,13 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 	if ok {
 		db = dbContext.(*database.Database)
 	} else {
-		utils.EncodeJSONError(w, "Missing database connection", http.StatusInternalServerError)
+		utils.EncodeJSONErrorWithLogging(r, w, "Missing database connection", http.StatusInternalServerError)
 		return
 	}
 
 	err = db.Begin()
 	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusInternalServerError)
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer (func() {
@@ -63,18 +63,18 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 		Password(reqData.Password)
 	user, err := userStore.GetUser(options)
 	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusUnauthorized)
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	if user == nil {
-		utils.EncodeJSONError(w, "Incorrect username or password", http.StatusUnauthorized)
+		utils.EncodeJSONErrorWithLogging(r, w, "Incorrect username or password", http.StatusUnauthorized)
 		return
 	}
 
 	token, err := utils.CreateJWTToken(jwt.MapClaims{"user_id": user.Id}, []byte(os.Getenv("AUTH_SECRET")))
 	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusInternalServerError)
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -88,30 +88,22 @@ func (controller AuthenticationController) ValidateToken(w http.ResponseWriter, 
 	authHeader := r.Header.Get("Authorization")
 
 	if authHeader == "" {
-		utils.EncodeJSONError(w, "Missing authorization header", http.StatusBadRequest)
+		utils.EncodeJSONErrorWithLogging(r, w, "Missing authorization header", http.StatusBadRequest)
 		return
 	}
 
-	var db *database.Database
-	dbContext, ok := context.GetOk(r, "DB")
+	var stores *models.Stores
+	storesContext, ok := context.GetOk(r, "Stores")
 	if ok {
-		db = dbContext.(*database.Database)
+		stores = storesContext.(*models.Stores)
 	} else {
-		utils.EncodeJSONError(w, "Missing database connection", http.StatusInternalServerError)
+		utils.EncodeJSONErrorWithLogging(r, w, "Missing database connection", http.StatusInternalServerError)
 		return
 	}
 
-	err = db.Begin()
+	_, err = stores.UserStore.AuthenticateUser(authHeader)
 	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Rollback()
-
-	userStore := models.NewUserStore(db)
-	_, err = userStore.AuthenticateUser(authHeader)
-	if err != nil {
-		utils.EncodeJSONError(w, err.Error(), http.StatusUnauthorized)
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 

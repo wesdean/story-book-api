@@ -21,7 +21,7 @@ func databaseTestHandler() http.HandlerFunc {
 func TestDatabaseMiddleware(t *testing.T) {
 	setupEnvironment(t)
 
-	dbHandler := middlewares.DatabaseMiddleware(databaseTestHandler())
+	dbHandler := middlewares.LoggingCleanupMiddleware(middlewares.DatabaseMiddleware(databaseTestHandler()))
 
 	testServer := httptest.NewServer(dbHandler)
 	defer testServer.Close()
