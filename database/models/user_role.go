@@ -115,9 +115,10 @@ func (store *UserRoleStore) GetRoles(options *UserRoleQueryOptions) ([]*UserRole
 		options.useDescription,
 		options.description,
 	}
+
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
-		store.logger.Errorf("failed to retrieve user roles: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to retrieve user roles: %s", err.Error())
 		return nil, err
 	}
 
@@ -131,7 +132,7 @@ func (store *UserRoleStore) GetRoles(options *UserRoleQueryOptions) ([]*UserRole
 			&role.Description,
 		)
 		if err != nil {
-			store.logger.Errorf("failed to scan user role: %s", err.Error())
+			logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to scan user role: %s", err.Error())
 			return nil, err
 		}
 		roles = append(roles, role)

@@ -5,6 +5,10 @@ ARG code_dir
 ENV ENV development
 ENV CODE_DIR $code_dir
 COPY . $code_dir
+WORKDIR $code_dir/database
+RUN npm i
+RUN node node_modules/knex/bin/cli.js migrate:latest
+
 WORKDIR $code_dir
 RUN go build -o story-book-api
 CMD ["./story-book-api"]

@@ -11,5 +11,6 @@ func BindRoutes(r *mux.Router) []*mux.Route {
 	return []*mux.Route{
 		r.Handle("/", alice.New(middlewares.ConfigMiddleware, middlewares.DatabaseMiddleware).Then(middlewares.RunAPI(controllers.HealthCheckController{}.Index))),
 		r.Handle("/authentication", alice.New(middlewares.DatabaseMiddleware).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))).Methods("POST"),
+		r.Handle("/user_roles", alice.New(middlewares.DatabaseMiddleware).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))).Methods("GET"),
 	}
 }
