@@ -8,7 +8,7 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
-	resp, err := http.Get(config.IntegrationTest.ApiUrl)
+	resp, err := netClient.Get(config.IntegrationTest.ApiUrl)
 	if err != nil {
 		t.Error(err)
 		return

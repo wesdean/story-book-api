@@ -1,18 +1,29 @@
 package integration_test
 
 import (
+	"flag"
 	"fmt"
 	"github.com/wesdean/story-book-api/app_config"
 	"github.com/wesdean/story-book-api/database"
 	"io/ioutil"
+	"net/http"
 	"os"
-	"os/exec"
 	"testing"
+	"time"
 )
 
 var config *app_config.Config
+var netClient = &http.Client{
+	Timeout: time.Second * 10,
+}
 
 func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("Integration tests skipped in short mode")
+		return
+	}
+
 	var err error
 
 	config, err = app_config.NewConfigFromFile("../app_config/test.config.json")
@@ -28,28 +39,20 @@ func TestMain(m *testing.M) {
 
 	setupEnvironment()
 
-	if config.IntegrationTest.StartDocker != nil {
-		cmd := exec.Command(config.IntegrationTest.StartDocker.Command, config.IntegrationTest.StartDocker.Arguments...)
-		cmd.Dir = config.IntegrationTest.StartDocker.Directory
-		fmt.Println("Building Docker container")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+	fmt.Println("CommandHook:BeforeTest")
+	err = config.IntegrationTest.Hooks.RunHook("Hooks.CommandHooks.BeforeTest")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	m.Run()
 
-	if config.IntegrationTest.StopDocker != nil {
-		cmd := exec.Command(config.IntegrationTest.StopDocker.Command, config.IntegrationTest.StopDocker.Arguments...)
-		cmd.Dir = config.IntegrationTest.StopDocker.Directory
-		fmt.Println("Stopping Docker container")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+	fmt.Println("CommandHook:AfterTest")
+	err = config.IntegrationTest.Hooks.RunHook("Hooks.CommandHooks.AfterTest")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 

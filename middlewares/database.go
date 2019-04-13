@@ -46,6 +46,7 @@ func DatabaseMiddleware(h http.Handler) http.Handler {
 		context.Set(r, "DB", db)
 		context.Set(r, "Stores", stores)
 
+		AppendCleanups(r, DatabaseCleanupMiddleware)
 		h.ServeHTTP(w, r)
 	})
 }

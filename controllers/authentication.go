@@ -47,7 +47,6 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-
 	if user == nil {
 		utils.EncodeJSONErrorWithLogging(r, w, "Incorrect username or password", http.StatusUnauthorized)
 		return

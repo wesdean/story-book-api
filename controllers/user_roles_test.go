@@ -19,7 +19,7 @@ func TestUserRolesController_Index(t *testing.T) {
 	t.Run("Get all roles", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.UserRolesController{}.Index)
+		).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -63,7 +63,7 @@ func TestUserRolesController_Index(t *testing.T) {
 	t.Run("Get roles by ID", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.UserRolesController{}.Index)
+		).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -113,7 +113,7 @@ func TestUserRolesController_Index(t *testing.T) {
 	t.Run("Get roles by name", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.UserRolesController{}.Index)
+		).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -163,7 +163,7 @@ func TestUserRolesController_Index(t *testing.T) {
 	t.Run("Get roles by label", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.UserRolesController{}.Index)
+		).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -213,7 +213,7 @@ func TestUserRolesController_Index(t *testing.T) {
 	t.Run("Get roles by description", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.UserRolesController{}.Index)
+		).Then(middlewares.RunAPI(controllers.UserRolesController{}.Index))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()

@@ -136,7 +136,6 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 		options.useUpdatedAtEnd,
 		options.updatedAtEnd,
 	}
-
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
 		store.logger.Errorf("failed to retrieve users: %s", err.Error())

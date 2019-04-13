@@ -20,7 +20,7 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 	t.Run("Return token on success", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.AuthenticationController{}.CreateToken)
+		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -98,7 +98,7 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 	t.Run("Return 401 for bad username or password", func(t *testing.T) {
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
-		).ThenFunc(controllers.AuthenticationController{}.CreateToken)
+		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))
 
 		testServer := httptest.NewServer(handler)
 		defer testServer.Close()
@@ -137,7 +137,6 @@ func TestAuthenticationController_ValidateToken(t *testing.T) {
 	setupEnvironment(t)
 
 	t.Run("Return true on valid token", func(t *testing.T) {
-
 		handler := alice.New(
 			middlewares.DatabaseMiddleware,
 		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.ValidateToken))

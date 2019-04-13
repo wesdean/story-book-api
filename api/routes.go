@@ -9,7 +9,7 @@ import (
 
 func BindRoutes(r *mux.Router) []*mux.Route {
 	return []*mux.Route{
-		r.Handle("/", alice.New(middlewares.ConfigMiddleware, middlewares.DatabaseMiddleware).ThenFunc(controllers.HealthCheckController{}.Index)),
-		r.Handle("/authentication", alice.New(middlewares.DatabaseMiddleware).ThenFunc(controllers.AuthenticationController{}.CreateToken)).Methods("POST"),
+		r.Handle("/", alice.New(middlewares.ConfigMiddleware, middlewares.DatabaseMiddleware).Then(middlewares.RunAPI(controllers.HealthCheckController{}.Index))),
+		r.Handle("/authentication", alice.New(middlewares.DatabaseMiddleware).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))).Methods("POST"),
 	}
 }
