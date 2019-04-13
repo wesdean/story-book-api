@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewModel(t *testing.T) {
-	model := models.NewStore(db)
+	model := models.NewStore(db, logger)
 	err := model.Ping()
 	if err != nil {
 		t.Error(err)

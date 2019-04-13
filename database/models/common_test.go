@@ -62,7 +62,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 
 	logger.Info("Cleaning up tests")
-	err = db.Rollback()
+	err = db.Commit()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

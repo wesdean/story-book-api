@@ -4,7 +4,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
-	"gopkg.in/guregu/null.v3"
 	"os"
 	"testing"
 )
@@ -13,7 +12,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 	t.Run("Get all users", func(t *testing.T) {
 		seedDb()
 
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		users, err := userStore.GetUsers(nil)
 		if err != nil {
 			t.Error(err)
@@ -28,7 +27,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 	})
 
 	t.Run("Get user by ID", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		users, err := userStore.GetUsers(models.NewUserQueryOptions().Id(2))
 		if err != nil {
 			t.Error(err)
@@ -42,14 +41,14 @@ func TestUserStore_GetUsers(t *testing.T) {
 		}
 
 		expectedUsername := "owner"
-		if users[0].Username.ValueOrZero() != expectedUsername {
-			t.Errorf("expected %v, got %v", expectedUsername, users[0].Username.ValueOrZero())
+		if users[0].Username != expectedUsername {
+			t.Errorf("expected %v, got %v", expectedUsername, users[0].Username)
 			return
 		}
 	})
 
 	t.Run("Get user by Username", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		users, err := userStore.GetUsers(models.NewUserQueryOptions().Username("owner"))
 		if err != nil {
 			t.Error(err)
@@ -62,15 +61,15 @@ func TestUserStore_GetUsers(t *testing.T) {
 			return
 		}
 
-		expectedId := int64(2)
-		if users[0].Id.ValueOrZero() != expectedId {
-			t.Errorf("expected %v, got %v", expectedId, users[0].Id.ValueOrZero())
+		expectedId := 2
+		if users[0].Id != expectedId {
+			t.Errorf("expected %v, got %v", expectedId, users[0].Id)
 			return
 		}
 	})
 
 	t.Run("Get user by Username and Password", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		options := models.NewUserQueryOptions().
 			Username("owner").
 			Password("ownerpassword")
@@ -86,15 +85,15 @@ func TestUserStore_GetUsers(t *testing.T) {
 			return
 		}
 
-		expectedId := int64(2)
-		if users[0].Id.ValueOrZero() != expectedId {
-			t.Errorf("expected %v, got %v", expectedId, users[0].Id.ValueOrZero())
+		expectedId := 2
+		if users[0].Id != expectedId {
+			t.Errorf("expected %v, got %v", expectedId, users[0].Id)
 			return
 		}
 	})
 
 	t.Run("Return empty array when no users found", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		options := models.NewUserQueryOptions().Id(-1)
 		users, err := userStore.GetUsers(options)
 		if err != nil {
@@ -111,21 +110,21 @@ func TestUserStore_GetUsers(t *testing.T) {
 
 func TestUserStore_GetUser(t *testing.T) {
 	t.Run("Return single user", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		user, err := userStore.GetUser(nil)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
-		if user.Id.ValueOrZero() != 1 {
+		if user.Id != 1 {
 			t.Errorf("expected 1, got %v", user.Id)
 			return
 		}
 	})
 
 	t.Run("Return nil when no user found", func(t *testing.T) {
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		options := models.NewUserQueryOptions().Id(-1)
 		user, err := userStore.GetUser(options)
 		if err != nil {
@@ -145,8 +144,8 @@ func TestUserStore_AuthenticateUser(t *testing.T) {
 
 	t.Run("Successful authentication", func(t *testing.T) {
 		user := &models.User{
-			Id:       null.IntFrom(2),
-			Username: null.StringFrom("owner"),
+			Id:       2,
+			Username: "owner",
 		}
 
 		token, err := utils.CreateJWTToken(
@@ -158,7 +157,7 @@ func TestUserStore_AuthenticateUser(t *testing.T) {
 			return
 		}
 
-		userStore := models.NewUserStore(db)
+		userStore := models.NewUserStore(db, logger)
 		authUser, err := userStore.AuthenticateUser(token)
 		if err != nil {
 			t.Error(err)
@@ -182,7 +181,7 @@ func TestUserStore_DisableUser(t *testing.T) {
 
 	userId := 4
 
-	userStore := models.NewUserStore(db)
+	userStore := models.NewUserStore(db, logger)
 	err := userStore.DisableUser(userId)
 	if err != nil {
 		t.Error(err)
@@ -205,7 +204,7 @@ func TestUserStore_EnableUser(t *testing.T) {
 
 	userId := 6
 
-	userStore := models.NewUserStore(db)
+	userStore := models.NewUserStore(db, logger)
 	err := userStore.EnableUser(userId)
 	if err != nil {
 		t.Error(err)
@@ -228,7 +227,7 @@ func TestUserStore_ArchiveUser(t *testing.T) {
 
 	userId := 4
 
-	userStore := models.NewUserStore(db)
+	userStore := models.NewUserStore(db, logger)
 	err := userStore.ArchiveUser(userId)
 	if err != nil {
 		t.Error(err)
@@ -251,7 +250,7 @@ func TestUserStore_UnarchiveUser(t *testing.T) {
 
 	userId := 7
 
-	userStore := models.NewUserStore(db)
+	userStore := models.NewUserStore(db, logger)
 	err := userStore.UnarchiveUser(userId)
 	if err != nil {
 		t.Error(err)

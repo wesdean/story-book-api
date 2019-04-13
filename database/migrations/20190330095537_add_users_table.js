@@ -17,6 +17,10 @@ exports.up = function (knex, Promise) {
 
 exports.down = function (knex, Promise) {
     return Promise.all([
-        knex.schema.dropTable('users')
+        knex.schema.hasTable('users').then((exists) => {
+            if (exists) {
+                return knex.schema.dropTable('users')
+            }
+        })
     ]);
 };

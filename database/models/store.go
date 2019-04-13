@@ -2,14 +2,19 @@ package models
 
 import (
 	"github.com/wesdean/story-book-api/database"
+	"github.com/wesdean/story-book-api/logging"
 )
 
 type Store struct {
-	db *database.Database
+	db     *database.Database
+	logger *logging.Logger
 }
 
-func NewStore(db *database.Database) *Store {
-	return &Store{db: db}
+func NewStore(db *database.Database, logger *logging.Logger) *Store {
+	return &Store{
+		db:     db,
+		logger: logger,
+	}
 }
 
 func (store *Store) Ping() error {

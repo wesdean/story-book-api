@@ -3,11 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/context"
-	"github.com/wesdean/story-book-api/database"
 	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
-	"log"
 	"net/http"
 	"os"
 )
@@ -36,32 +33,16 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 		return
 	}
 
-	var db *database.Database
-	dbContext, ok := context.GetOk(r, "DB")
-	if ok {
-		db = dbContext.(*database.Database)
-	} else {
-		utils.EncodeJSONErrorWithLogging(r, w, "Missing database connection", http.StatusInternalServerError)
-		return
-	}
-
-	err = db.Begin()
+	stores, err := models.GetStoresFromRequest(r)
 	if err != nil {
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer (func() {
-		err := db.Rollback()
-		if err != nil {
-			log.Panic(err)
-		}
-	})()
 
-	userStore := models.NewUserStore(db)
 	options := models.NewUserQueryOptions().
 		Username(reqData.Username).
 		Password(reqData.Password)
-	user, err := userStore.GetUser(options)
+	user, err := stores.UserStore.GetUser(options)
 	if err != nil {
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusUnauthorized)
 		return
@@ -88,16 +69,13 @@ func (controller AuthenticationController) ValidateToken(w http.ResponseWriter, 
 	authHeader := r.Header.Get("Authorization")
 
 	if authHeader == "" {
-		utils.EncodeJSONErrorWithLogging(r, w, "Missing authorization header", http.StatusBadRequest)
+		utils.EncodeJSONErrorWithLogging(r, w, "missing authorization header", http.StatusBadRequest)
 		return
 	}
 
-	var stores *models.Stores
-	storesContext, ok := context.GetOk(r, "Stores")
-	if ok {
-		stores = storesContext.(*models.Stores)
-	} else {
-		utils.EncodeJSONErrorWithLogging(r, w, "Missing database connection", http.StatusInternalServerError)
+	stores, err := models.GetStoresFromRequest(r)
+	if err != nil {
+		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

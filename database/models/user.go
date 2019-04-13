@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"github.com/wesdean/story-book-api/database"
+	"github.com/wesdean/story-book-api/logging"
 	"github.com/wesdean/story-book-api/utils"
 	"gopkg.in/guregu/null.v3"
 	"os"
@@ -15,8 +16,8 @@ type UserStore struct {
 }
 
 type User struct {
-	Id        null.Int
-	Username  null.String
+	Id        int
+	Username  string
 	CreatedOn null.Time
 	LastLogin null.Time
 	Disabled  bool
@@ -28,8 +29,8 @@ type AuthenticatedUser struct {
 	Timestamp int
 }
 
-func NewUserStore(db *database.Database) *UserStore {
-	return &UserStore{Store: NewStore(db)}
+func NewUserStore(db *database.Database, logger *logging.Logger) *UserStore {
+	return &UserStore{Store: NewStore(db, logger)}
 }
 
 type UserQueryOptions struct {
@@ -109,16 +110,16 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 	}
 
 	var err error
-	sqlQuery := "select id, username, created_at, updated_at, disabled, archived " +
-		"from users " +
-		"where" +
-		"($1 = false or ($1 = true and id = $2)) " +
-		"and ($3 = false or ($3 = true and username = $4)) " +
-		"and ($5 = false or ($5 = true and password = $6)) " +
-		"and ($7 = false or ($7 = true and created_at >= $8)) " +
-		"and ($9 = false or ($9 = true and created_at <= $10)) " +
-		"and ($11 = false or ($11 = true and updated_at >= $12)) " +
-		"and ($13 = false or ($13 = true and updated_at <= $14))"
+	sqlQuery := `select id, username, created_at, updated_at, disabled, archived
+		from users
+		where
+		($1 = false or ($1 = true and id = $2))
+		and ($3 = false or ($3 = true and username = $4))
+		and ($5 = false or ($5 = true and password = $6))
+		and ($7 = false or ($7 = true and created_at >= $8))
+		and ($9 = false or ($9 = true and created_at <= $10))
+		and ($11 = false or ($11 = true and updated_at >= $12))
+		and ($13 = false or ($13 = true and updated_at <= $14))`
 	args := []interface{}{
 		options.useId,
 		options.id,
@@ -138,6 +139,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
+		store.logger.Errorf("failed to retrieve users: %s", err.Error())
 		return nil, err
 	}
 	defer (func() {
@@ -156,6 +158,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 			&user.Archived,
 		)
 		if err != nil {
+			store.logger.Errorf("failed to scan user row: %s", err.Error())
 			return nil, err
 		}
 		users = append(users, &user)
@@ -209,7 +212,7 @@ func (store *UserStore) AuthenticateUser(token string) (*AuthenticatedUser, erro
 		return nil, err
 	}
 
-	if user == nil || user.Id.ValueOrZero() <= 0 {
+	if user == nil || user.Id <= 0 {
 		return nil, errors.New("invalid user")
 	}
 

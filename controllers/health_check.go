@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
 	"net/http"
 	"os"
@@ -19,6 +20,15 @@ func (controller HealthCheckController) Index(w http.ResponseWriter, r *http.Req
 		authTokenCheck = true
 	}
 
+	var dbCheck bool
+	stores, err := models.GetStoresFromRequest(r)
+	if err == nil {
+		err = stores.UserStore.Ping()
+		if err == nil {
+			dbCheck = true
+		}
+	}
+
 	var healthCheck bool
 	if err == nil {
 		healthCheck = true
@@ -27,6 +37,7 @@ func (controller HealthCheckController) Index(w http.ResponseWriter, r *http.Req
 	var output = map[string]interface{}{
 		"healthCheck":    healthCheck,
 		"authTokenCheck": authTokenCheck,
+		"dbCheck":        dbCheck,
 	}
 
 	utils.EncodeJSON(w, output)

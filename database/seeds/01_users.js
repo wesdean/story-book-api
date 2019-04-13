@@ -8,7 +8,8 @@ exports.seed = function (knex) {
                 {id: 2, username: 'owner', password: 'ownerpassword'},
                 {id: 3, username: 'author', password: 'authorpassword'},
                 {id: 4, username: 'editor', password: 'editorpassword'},
-                {id: 5, username: 'reader', password: 'readerpassword'},
+                {id: 5, username: 'proofreader', password: 'proofreader'},
+                {id: 6, username: 'reader', password: 'readerpassword'},
             ]);
         });
 };

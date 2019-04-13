@@ -11,15 +11,29 @@ import (
 )
 
 type Config struct {
-	Logger      logging.LoggerConfig
-	Models      PackageConfig
-	Controllers PackageConfig
-	API         PackageConfig
+	Logger          logging.LoggerConfig
+	Models          PackageConfig
+	Controllers     PackageConfig
+	API             PackageConfig
+	IntegrationTest IntegrationTestConfig
 }
 
 type PackageConfig struct {
 	DatabaseSeed string
 	Logger       logging.LoggerConfig
+}
+
+type IntegrationTestConfig struct {
+	StartDocker *CommandConfig
+	StopDocker  *CommandConfig
+	ApiUrl      string
+	Logger      logging.LoggerConfig
+}
+
+type CommandConfig struct {
+	Directory string
+	Command   string
+	Arguments []string
 }
 
 func NewConfigFromFile(filename string) (*Config, error) {

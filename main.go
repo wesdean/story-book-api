@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/wesdean/story-book-api/api"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -21,13 +20,5 @@ func main() {
 		log.Fatalf("Error loading .env file: %s", err.Error())
 	}
 
-	r := mux.NewRouter()
-	BindRoutes(r)
-
-	httpPort := os.Getenv("HTTP_PORT")
-	log.Printf("Server listening on port %s\n", httpPort)
-	err = http.ListenAndServe(fmt.Sprintf(":%s", httpPort), r)
-	if err != nil {
-		log.Fatal("Error starting HTTP server")
-	}
+	api.StartServer(os.Getenv("HTTP_PORT"))
 }

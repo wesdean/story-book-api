@@ -216,7 +216,7 @@ func TestAuthenticationController_ValidateToken(t *testing.T) {
 			return
 		}
 
-		expected := `{"error":"Missing authorization header"}`
+		expected := `{"error":"missing authorization header"}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)
 			return

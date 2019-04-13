@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"github.com/gorilla/mux"
@@ -9,7 +9,7 @@ import (
 
 func BindRoutes(r *mux.Router) []*mux.Route {
 	return []*mux.Route{
-		r.Handle("/", alice.New().ThenFunc(controllers.HealthCheckController{}.Index)),
+		r.Handle("/", alice.New(middlewares.ConfigMiddleware, middlewares.DatabaseMiddleware).ThenFunc(controllers.HealthCheckController{}.Index)),
 		r.Handle("/authentication", alice.New(middlewares.DatabaseMiddleware).ThenFunc(controllers.AuthenticationController{}.CreateToken)).Methods("POST"),
 	}
 }

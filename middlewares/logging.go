@@ -6,6 +6,7 @@ import (
 	"github.com/wesdean/story-book-api/logging"
 	"github.com/wesdean/story-book-api/utils"
 	"net/http"
+	"os"
 )
 
 func LoggingMiddleware(h http.Handler) http.Handler {
@@ -21,7 +22,11 @@ func LoggingMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
-		logConfig, err := config.GetLogger("Config.API.Logger")
+		loggerPath := os.Getenv("LOGGER")
+		if loggerPath == "" {
+			loggerPath = "Config.API.Logger"
+		}
+		logConfig, err := config.GetLogger(loggerPath)
 		if err != nil {
 			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 			return

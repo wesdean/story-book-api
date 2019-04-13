@@ -41,7 +41,7 @@ func DatabaseMiddleware(h http.Handler) http.Handler {
 		logging.Log(logger, logging.LOGLEVEL_INFO, "database opened")
 
 		logging.Log(logger, logging.LOGLEVEL_INFO, "stores created")
-		stores := models.NewStores(db)
+		stores := models.NewStores(db, logger)
 
 		context.Set(r, "DB", db)
 		context.Set(r, "Stores", stores)
