@@ -15,6 +15,7 @@ services:
       - 3000:3000
     environment:
       - CONFIG_FILENAME=/go/src/github.com/wesdean/story-book-api/app_config/test.config.json
+      - AUTH_SECRET=testing
       - LOGGER=Config.IntegrationTest.Logger
       - DB_HOST=database
     networks:

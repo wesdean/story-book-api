@@ -3,10 +3,13 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/wesdean/story-book-api/controllers"
+	"github.com/wesdean/story-book-api/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 )
@@ -16,9 +19,23 @@ func TestUserRoles(t *testing.T) {
 		seedDb()
 
 		var baseUrl = config.IntegrationTest.ApiUrl + "/user_roles"
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 2},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 
 		t.Run("Get all roles", func(t *testing.T) {
-			resp, err := netClient.Get(baseUrl)
+			req, err := http.NewRequest("GET", baseUrl, nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			req.Header.Set("Authorization", token)
+			resp, err := netClient.Do(req)
 			if err != nil {
 				t.Error(err)
 				return
@@ -47,7 +64,13 @@ func TestUserRoles(t *testing.T) {
 		})
 
 		t.Run("Get roles by id", func(t *testing.T) {
-			resp, err := netClient.Get(baseUrl + "?id=3")
+			req, err := http.NewRequest("GET", baseUrl+"?id=3", nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			req.Header.Set("Authorization", token)
+			resp, err := netClient.Do(req)
 			if err != nil {
 				t.Error(err)
 				return
@@ -82,7 +105,13 @@ func TestUserRoles(t *testing.T) {
 		})
 
 		t.Run("Get roles by name", func(t *testing.T) {
-			resp, err := netClient.Get(baseUrl + "?name=owner")
+			req, err := http.NewRequest("GET", baseUrl+"?name=owner", nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			req.Header.Set("Authorization", token)
+			resp, err := netClient.Do(req)
 			if err != nil {
 				t.Error(err)
 				return
@@ -117,7 +146,13 @@ func TestUserRoles(t *testing.T) {
 		})
 
 		t.Run("Get roles by label", func(t *testing.T) {
-			resp, err := netClient.Get(baseUrl + "?label=Owner")
+			req, err := http.NewRequest("GET", baseUrl+"?label=Owner", nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			req.Header.Set("Authorization", token)
+			resp, err := netClient.Do(req)
 			if err != nil {
 				t.Error(err)
 				return
@@ -152,7 +187,13 @@ func TestUserRoles(t *testing.T) {
 		})
 
 		t.Run("Get roles by description", func(t *testing.T) {
-			resp, err := netClient.Get(fmt.Sprintf("%s?description=%s", baseUrl, url.QueryEscape("Superman Only")))
+			req, err := http.NewRequest("GET", fmt.Sprintf("%s?description=%s", baseUrl, url.QueryEscape("Superman Only")), nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			req.Header.Set("Authorization", token)
+			resp, err := netClient.Do(req)
 			if err != nil {
 				t.Error(err)
 				return

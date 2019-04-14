@@ -25,7 +25,10 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 	setupEnvironment(t)
 
 	t.Run("Successful authentication", func(t *testing.T) {
-		authHandler := middlewares.AuthenticationtMiddleware(authenticationTestHandler())
+		authHandler := alice.New(
+			middlewares.DatabaseMiddleware,
+			middlewares.AuthenticationtMiddleware,
+		).Then(middlewares.RunAPI(authenticationTestHandler()))
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -36,7 +39,7 @@ func TestAuthenticationtMiddleware(t *testing.T) {
 		u.WriteString(string(testServer.URL))
 		u.WriteString("/")
 
-		authToken, err := utils.CreateJWTToken(jwt.MapClaims{}, []byte(""))
+		authToken, err := utils.CreateJWTToken(jwt.MapClaims{"user_id": 2}, []byte(""))
 
 		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {

@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"github.com/gorilla/context"
+	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
 	"net/http"
 	"os"
@@ -9,11 +10,6 @@ import (
 	"strings"
 	"time"
 )
-
-type AuthenticatedToken struct {
-	UserId    int
-	Timestamp int64
-}
 
 func AuthenticationtMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,14 +45,39 @@ func AuthenticationtMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
-		userId, ok := claims["user_id"].(int)
-		authToken := AuthenticatedToken{
-			UserId:    userId,
-			Timestamp: timestamp,
+		userId, ok := claims["user_id"].(float64)
+		if !ok {
+			utils.EncodeJSONErrorWithLogging(r, w, "invalid user id in token", http.StatusBadRequest)
+			return
+		}
+		stores, err := models.GetStoresFromRequest(r)
+		if err != nil {
+			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user, err := stores.UserStore.GetUser(models.NewUserQueryOptions().Id(int(userId)))
+		if err != nil {
+			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		authenticatedUser := &models.AuthenticatedUser{
+			User:      user,
+			Timestamp: int(timestamp),
 		}
 
-		context.Set(r, "AuthToken", authToken)
+		context.Set(r, "AuthenticatedUser", authenticatedUser)
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func GetAuthenticatedUserFromRequest(r *http.Request) *models.AuthenticatedUser {
+	authUserContext, ok := context.GetOk(r, "AuthenticatedUser")
+	if ok {
+		authUser, ok := authUserContext.(*models.AuthenticatedUser)
+		if ok {
+			return authUser
+		}
+	}
+	return nil
 }

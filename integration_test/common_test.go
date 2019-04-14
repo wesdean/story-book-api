@@ -60,6 +60,10 @@ func setupEnvironment() {
 	var err error
 
 	err = os.Setenv("CONFIG_FILENAME", "../app_config/test.config.json")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	err = os.Setenv("AUTH_SECRET", "testing")
 	if err != nil {

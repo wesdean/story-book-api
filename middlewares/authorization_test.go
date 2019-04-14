@@ -3,6 +3,7 @@ package middlewares_test
 import (
 	"bytes"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/justinas/alice"
 	"github.com/wesdean/story-book-api/middlewares"
 	"github.com/wesdean/story-book-api/utils"
 	"io/ioutil"
@@ -23,7 +24,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 	setupEnvironment(t)
 
 	t.Run("Successful authorization", func(t *testing.T) {
-		authHandler := middlewares.AuthorizationMiddleware(authorizationTestHandler())
+		authHandler := alice.New(
+			middlewares.DatabaseMiddleware,
+			middlewares.AuthenticationtMiddleware,
+			middlewares.AuthorizationMiddleware,
+		).Then(middlewares.RunAPI(authorizationTestHandler()))
 
 		testServer := httptest.NewServer(authHandler)
 		defer testServer.Close()
@@ -34,7 +39,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		u.WriteString(string(testServer.URL))
 		u.WriteString("/")
 
-		authToken, err := utils.CreateJWTToken(jwt.MapClaims{}, []byte(""))
+		authToken, err := utils.CreateJWTToken(jwt.MapClaims{"user_id": 2}, []byte(""))
 
 		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
