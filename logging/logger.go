@@ -34,6 +34,7 @@ func NewLogger(logConfig *LoggerConfig) (*Logger, error) {
 	} else {
 		writeType = os.O_APPEND
 	}
+
 	logFile, err := os.OpenFile(logConfig.LogPath.ValueOrZero(), os.O_CREATE|os.O_WRONLY|writeType, 0660)
 	if err != nil {
 		return nil, err

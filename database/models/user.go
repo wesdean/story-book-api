@@ -138,7 +138,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 	}
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
-		store.logger.Errorf("failed to retrieve users: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to retrieve users: %s", err.Error())
 		return nil, err
 	}
 	defer (func() {
@@ -157,7 +157,7 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 			&user.Archived,
 		)
 		if err != nil {
-			store.logger.Errorf("failed to scan user row: %s", err.Error())
+			logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to scan user row: %s", err.Error())
 			return nil, err
 		}
 		users = append(users, &user)

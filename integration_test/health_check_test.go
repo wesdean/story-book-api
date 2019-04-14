@@ -23,7 +23,6 @@ func TestHealthCheck(t *testing.T) {
 			return
 		}
 
-		//todo fix logging Unix syslog delivery error
 		expected := `{"authTokenCheck":true,"dbCheck":true,"healthCheck":true}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)

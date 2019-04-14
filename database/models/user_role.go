@@ -68,12 +68,12 @@ func (store *UserRoleStore) CreateRole(name, label string, description null.Stri
 	var id int
 	err := store.db.Tx.QueryRow(sqlQuery, name, label, description).Scan(&id)
 	if err != nil {
-		store.logger.Errorf("failed to create user role: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to create user role: %s", err.Error())
 		return nil, err
 	}
 
 	if id <= 0 {
-		store.logger.Error("failed to get ID after creating user role")
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to get ID after creating user role")
 		return nil, err
 	}
 	return &UserRole{
@@ -88,7 +88,7 @@ func (store *UserRoleStore) DeleteRole(roleId int) error {
 	sqlQuery := `delete from user_roles where id = $1`
 	_, err := store.db.Tx.Exec(sqlQuery, roleId)
 	if err != nil {
-		store.logger.Errorf("failed to delete role: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to delete role: %s", err.Error())
 		return err
 	}
 	return nil

@@ -38,7 +38,7 @@ func (store *UserRoleLinkStore) CreateLinks(roleLinks []UserRoleLink) error {
 		values ` + strings.Join(valuesStr, ",")
 	_, err := store.db.Tx.Exec(sqlQuery, params...)
 	if err != nil {
-		store.logger.Errorf("failed to add roles to user: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to add roles to user: %s", err.Error())
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (store *UserRoleLinkStore) DeleteLinks(roleLinks []UserRoleLink) error {
 	sqlQuery := `delete from user_role_links where ` + strings.Join(whereStr, " or ")
 	_, err := store.db.Tx.Exec(sqlQuery, params...)
 	if err != nil {
-		store.logger.Errorf("failed to add roles to user: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to add roles to user: %s", err.Error())
 		return err
 	}
 
@@ -70,7 +70,7 @@ func (store *UserRoleLinkStore) GetLinksForUser(userId int) (*UserRoleLinks, err
 	sqlQuery := `select user_id, user_role_id, resource_type, resource_id from user_role_links where user_id = $1`
 	rows, err := store.db.Tx.Query(sqlQuery, userId)
 	if err != nil {
-		store.logger.Errorf("failed to retrieve user role links: %s", err.Error())
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to retrieve user role links: %s", err.Error())
 		return nil, err
 	}
 
@@ -83,7 +83,7 @@ func (store *UserRoleLinkStore) GetLinksForUser(userId int) (*UserRoleLinks, err
 			&link.ResourceType,
 			&link.ResourceId)
 		if err != nil {
-			store.logger.Errorf("failed to scan user role link: %s", err.Error())
+			logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to scan user role link: %s", err.Error())
 			return nil, err
 		}
 		userRoleLinks.Links = append(userRoleLinks.Links, link)
