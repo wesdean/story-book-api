@@ -26,7 +26,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 		}
 	})
 
-	t.Run("Get user by ID", func(t *testing.T) {
+	t.Run("Get user by id", func(t *testing.T) {
 		userStore := models.NewUserStore(db, logger)
 		users, err := userStore.GetUsers(models.NewUserQueryOptions().Id(2))
 		if err != nil {
@@ -47,7 +47,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 		}
 	})
 
-	t.Run("Get user by Username", func(t *testing.T) {
+	t.Run("Get user by username", func(t *testing.T) {
 		userStore := models.NewUserStore(db, logger)
 		users, err := userStore.GetUsers(models.NewUserQueryOptions().Username("owner"))
 		if err != nil {
@@ -68,7 +68,7 @@ func TestUserStore_GetUsers(t *testing.T) {
 		}
 	})
 
-	t.Run("Get user by Username and Password", func(t *testing.T) {
+	t.Run("Get user by username and password", func(t *testing.T) {
 		userStore := models.NewUserStore(db, logger)
 		options := models.NewUserQueryOptions().
 			Username("owner").
@@ -90,6 +90,94 @@ func TestUserStore_GetUsers(t *testing.T) {
 			t.Errorf("expected %v, got %v", expectedId, users[0].Id)
 			return
 		}
+	})
+
+	t.Run("Get user by disabled", func(t *testing.T) {
+		userStore := models.NewUserStore(db, logger)
+
+		t.Run("User is disabled", func(t *testing.T) {
+			users, err := userStore.GetUsers(models.NewUserQueryOptions().Disabled(true))
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 1
+			if len(users) != expectedCount {
+				t.Errorf("expectedCount %v, got %v", expectedCount, len(users))
+				return
+			}
+
+			expectedId := 6
+			if users[0].Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, users[0].Id)
+				return
+			}
+		})
+
+		t.Run("User is not disabled", func(t *testing.T) {
+			users, err := userStore.GetUsers(models.NewUserQueryOptions().Disabled(false))
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 6
+			if len(users) != expectedCount {
+				t.Errorf("expectedCount %v, got %v", expectedCount, len(users))
+				return
+			}
+
+			expectedId := 1
+			if users[0].Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, users[0].Id)
+				return
+			}
+		})
+	})
+
+	t.Run("Get user by archived", func(t *testing.T) {
+		userStore := models.NewUserStore(db, logger)
+
+		t.Run("User is archived", func(t *testing.T) {
+			users, err := userStore.GetUsers(models.NewUserQueryOptions().Archived(true))
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 1
+			if len(users) != expectedCount {
+				t.Errorf("expectedCount %v, got %v", expectedCount, len(users))
+				return
+			}
+
+			expectedId := 7
+			if users[0].Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, users[0].Id)
+				return
+			}
+		})
+
+		t.Run("User is not archived", func(t *testing.T) {
+			users, err := userStore.GetUsers(models.NewUserQueryOptions().Archived(false))
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 6
+			if len(users) != expectedCount {
+				t.Errorf("expectedCount %v, got %v", expectedCount, len(users))
+				return
+			}
+
+			expectedId := 1
+			if users[0].Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, users[0].Id)
+				return
+			}
+		})
 	})
 
 	t.Run("Return empty array when no users found", func(t *testing.T) {

@@ -8,7 +8,7 @@ exports.up = function (knex, Promise) {
                     table.text('password').notNullable();
                     table.boolean('disabled').notNullable().defaultTo(false);
                     table.boolean('archived').notNullable().defaultTo(false);
-                    table.timestamps(true, true);
+                    table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
                 });
             }
         })

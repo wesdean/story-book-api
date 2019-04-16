@@ -19,7 +19,6 @@ type User struct {
 	Id        int
 	Username  string
 	CreatedOn null.Time
-	LastLogin null.Time
 	Disabled  bool
 	Archived  bool
 }
@@ -43,17 +42,17 @@ type UserQueryOptions struct {
 	usePassword bool
 	password    string
 
+	useDisabled bool
+	disabled    bool
+
+	useArchived bool
+	archived    bool
+
 	useCreatedAtStart bool
 	createdAtStart    time.Time
 
 	useCreatedAtEnd bool
 	createdAtEnd    time.Time
-
-	useUpdatedAtStart bool
-	updatedAtStart    time.Time
-
-	useUpdatedAtEnd bool
-	updatedAtEnd    time.Time
 }
 
 func NewUserQueryOptions() *UserQueryOptions {
@@ -78,6 +77,18 @@ func (options *UserQueryOptions) Password(password string) *UserQueryOptions {
 	return options
 }
 
+func (options *UserQueryOptions) Disabled(disabled bool) *UserQueryOptions {
+	options.useDisabled = true
+	options.disabled = disabled
+	return options
+}
+
+func (options *UserQueryOptions) Archived(archived bool) *UserQueryOptions {
+	options.useArchived = true
+	options.archived = archived
+	return options
+}
+
 func (options *UserQueryOptions) CreatedAt(createdAtStart *time.Time, createdAtEnd *time.Time) *UserQueryOptions {
 	if createdAtStart != nil {
 		options.useCreatedAtStart = true
@@ -91,35 +102,22 @@ func (options *UserQueryOptions) CreatedAt(createdAtStart *time.Time, createdAtE
 	return options
 }
 
-func (options *UserQueryOptions) UpdatedAt(updatedAtStart *time.Time, updatedAtEnd *time.Time) *UserQueryOptions {
-	if updatedAtStart != nil {
-		options.useUpdatedAtStart = true
-		options.updatedAtStart = *updatedAtStart
-	}
-
-	if updatedAtEnd != nil {
-		options.useUpdatedAtEnd = true
-		options.updatedAtEnd = *updatedAtEnd
-	}
-	return options
-}
-
 func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 	if options == nil {
 		options = NewUserQueryOptions()
 	}
 
 	var err error
-	sqlQuery := `select id, username, created_at, updated_at, disabled, archived
+	sqlQuery := `select id, username, created_at, disabled, archived
 		from users
 		where
 		($1 = false or ($1 = true and id = $2))
 		and ($3 = false or ($3 = true and username = $4))
 		and ($5 = false or ($5 = true and password = $6))
-		and ($7 = false or ($7 = true and created_at >= $8))
-		and ($9 = false or ($9 = true and created_at <= $10))
-		and ($11 = false or ($11 = true and updated_at >= $12))
-		and ($13 = false or ($13 = true and updated_at <= $14))`
+		and ($7 = false or ($7 = true and disabled = $8))
+		and ($9 = false or ($9 = true and archived = $10))
+		and ($11 = false or ($11 = true and created_at >= $12))
+		and ($13 = false or ($13 = true and created_at <= $14))`
 	args := []interface{}{
 		options.useId,
 		options.id,
@@ -127,14 +125,14 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 		options.username,
 		options.usePassword,
 		options.password,
+		options.useDisabled,
+		options.disabled,
+		options.useArchived,
+		options.archived,
 		options.useCreatedAtStart,
 		options.createdAtStart,
 		options.useCreatedAtEnd,
 		options.createdAtEnd,
-		options.useUpdatedAtStart,
-		options.updatedAtStart,
-		options.useUpdatedAtEnd,
-		options.updatedAtEnd,
 	}
 	rows, err := store.db.Tx.Query(sqlQuery, args...)
 	if err != nil {
@@ -152,7 +150,6 @@ func (store *UserStore) GetUsers(options *UserQueryOptions) ([]*User, error) {
 			&user.Id,
 			&user.Username,
 			&user.CreatedOn,
-			&user.LastLogin,
 			&user.Disabled,
 			&user.Archived,
 		)

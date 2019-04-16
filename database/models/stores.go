@@ -14,6 +14,7 @@ type Stores struct {
 	UserStore         *UserStore
 	UserRoleStore     *UserRoleStore
 	UserRoleLinkStore *UserRoleLinkStore
+	ForkStore         *ForkStore
 }
 
 func NewStores(db *database.Database, logger *logging.Logger) *Stores {
@@ -22,6 +23,7 @@ func NewStores(db *database.Database, logger *logging.Logger) *Stores {
 		UserStore:         NewUserStore(db, logger),
 		UserRoleStore:     NewUserRoleStore(db, logger),
 		UserRoleLinkStore: NewUserRoleLinkStore(db, logger),
+		ForkStore:         NewForkStore(db, logger),
 	}
 }
 
