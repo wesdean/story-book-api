@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/wesdean/story-book-api/database/models"
 	"github.com/wesdean/story-book-api/utils"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type AuthenticationController struct{}
@@ -29,6 +31,9 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 	var reqData AuthenticationCreateTokenRequest
 	err := decoder.Decode(&reqData)
 	if err != nil {
+		if strings.Contains(err.Error(), "EOF") {
+			err = errors.New("invalid request body")
+		}
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -49,6 +54,16 @@ func (controller AuthenticationController) CreateToken(w http.ResponseWriter, r 
 	}
 	if user == nil {
 		utils.EncodeJSONErrorWithLogging(r, w, "Incorrect username or password", http.StatusUnauthorized)
+		return
+	}
+
+	if user.Disabled {
+		utils.EncodeJSONErrorWithLogging(r, w, "user is disabled", http.StatusUnauthorized)
+		return
+	}
+
+	if user.Archived {
+		utils.EncodeJSONErrorWithLogging(r, w, "user is archived", http.StatusUnauthorized)
 		return
 	}
 

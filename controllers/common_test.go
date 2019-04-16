@@ -10,7 +10,6 @@ import (
 	"testing"
 )
 
-var db *database.Database
 var config *app_config.Config
 var logger *logging.Logger
 
@@ -40,48 +39,9 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	defer logging.CloseLogger(logger)
-	logger.Info("Setting up tests")
-
-	db, err = database.NewDatabase(nil)
-
-	err = db.Begin()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
-
-	seedDb()
-
-	err = db.Commit()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
-
-	err = db.GetDB().Close()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
 
 	logger.Info("Running tests")
 	m.Run()
-
-	logger.Info("Cleaning up tests")
-	err = db.Rollback()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	err = db.GetDB().Close()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
 	logger.Info("Tests completed")
 }
@@ -102,7 +62,44 @@ func setupEnvironment(t *testing.T) {
 	}
 }
 
+func openDB() *database.Database {
+	db, err := database.NewDatabase(nil)
+
+	err = db.Begin()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return nil
+	}
+	return db
+}
+
+func closeDB(db *database.Database) {
+	if db == nil {
+		return
+	}
+
+	err := db.Commit()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return
+	}
+
+	err = db.GetDB().Close()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return
+	}
+
+	db = nil
+}
+
 func seedDb() {
+	db := openDB()
+	defer closeDB(db)
+
 	sqlFile, err := ioutil.ReadFile("../database/sql/test_seed_controllers.sql")
 	if err != nil {
 		fmt.Println(err)

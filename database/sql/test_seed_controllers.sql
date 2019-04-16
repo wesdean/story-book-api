@@ -1,12 +1,13 @@
 truncate users restart identity cascade;
-insert into users (id, username, password, disabled, archived)
-values (1, 'admin', 'adminpassword', false, false),
-       (2, 'owner', 'ownerpassword', false, false),
-       (3, 'author', 'authorpassword', false, false),
-       (4, 'editor', 'editorpassword', false, false),
-       (5, 'reader', 'readerpassword', false, false),
-       (6, 'disabledreader', 'readerpassword', true, false),
-       (7, 'archivedreader', 'readerpassword', false, true);
+insert into users (username, password, disabled, archived)
+values (/*1*/'admin', 'adminpassword', false, false),
+       (/*2*/'owner', 'ownerpassword', false, false),
+       (/*3*/'author', 'authorpassword', false, false),
+       (/*4*/'editor', 'editorpassword', false, false),
+       (/*5*/'proofreader', 'proofreaderpassword', false, false),
+       (/*6*/'reader', 'readerpassword', false, false),
+       (/*7*/'disabledreader', 'readerpassword', true, false),
+       (/*8*/'archivedreader', 'readerpassword', false, true);
 
 truncate user_roles restart identity cascade;
 insert into user_roles (name, label, description)

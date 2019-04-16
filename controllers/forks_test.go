@@ -640,6 +640,7 @@ func forksController_Index(t *testing.T, token string) {
 
 func TestForksController_Index(t *testing.T) {
 	setupEnvironment(t)
+	seedDb()
 
 	t.Run("Unauthenticated user denied access", func(t *testing.T) {
 		handler := alice.New(
@@ -685,13 +686,68 @@ func TestForksController_Index(t *testing.T) {
 		forksController_Index(t, token)
 	})
 
-	//todo build tests for owner
+	t.Run("As owner", func(t *testing.T) {
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 2},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 
-	//todo build tests for author
+		forksController_Index(t, token)
+	})
 
-	//todo build tests for editor
+	t.Run("As author", func(t *testing.T) {
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 3},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 
-	//todo build tests for proofreader
+		forksController_Index(t, token)
+	})
 
-	//todo build tests for reader
+	t.Run("As editor", func(t *testing.T) {
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 3},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		forksController_Index(t, token)
+	})
+
+	t.Run("As proofreader", func(t *testing.T) {
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 3},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		forksController_Index(t, token)
+	})
+
+	t.Run("As reader", func(t *testing.T) {
+		token, err := utils.CreateJWTToken(
+			jwt.MapClaims{"user_id": 5},
+			[]byte(os.Getenv("AUTH_SECRET")),
+		)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		forksController_Index(t, token)
+	})
 }

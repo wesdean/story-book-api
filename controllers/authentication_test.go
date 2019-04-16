@@ -17,21 +17,22 @@ import (
 )
 
 func TestAuthenticationController_CreateToken(t *testing.T) {
+	handler := alice.New(
+		middlewares.DatabaseMiddleware,
+	).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))
+
+	testServer := httptest.NewServer(handler)
+	defer testServer.Close()
+
+	client := &http.Client{}
+
+	var u bytes.Buffer
+	u.WriteString(string(testServer.URL))
+	u.WriteString("/authentication")
+	url := u.String()
+
 	t.Run("Return token on success", func(t *testing.T) {
-		handler := alice.New(
-			middlewares.DatabaseMiddleware,
-		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))
-
-		testServer := httptest.NewServer(handler)
-		defer testServer.Close()
-
-		client := &http.Client{}
-
-		var u bytes.Buffer
-		u.WriteString(string(testServer.URL))
-		u.WriteString("/authentication")
-
-		req, err := http.NewRequest("POST", u.String(), strings.NewReader(`{"username":"owner","password":"ownerpassword"}`))
+		req, err := http.NewRequest("POST", url, strings.NewReader(`{"username":"owner","password":"ownerpassword"}`))
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -60,19 +61,8 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 		}
 	})
 
-	t.Run("Return EOF error when body is empty", func(t *testing.T) {
-		handler := http.HandlerFunc(controllers.AuthenticationController{}.CreateToken)
-
-		testServer := httptest.NewServer(handler)
-		defer testServer.Close()
-
-		client := &http.Client{}
-
-		var u bytes.Buffer
-		u.WriteString(string(testServer.URL))
-		u.WriteString("/authentication")
-
-		req, err := http.NewRequest("POST", u.String(), nil)
+	t.Run("Return error when body is empty", func(t *testing.T) {
+		req, err := http.NewRequest("POST", url, nil)
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -88,7 +78,7 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 			return
 		}
 
-		expected := `{"error":"EOF"}`
+		expected := `{"error":"invalid request body"}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)
 			return
@@ -96,20 +86,7 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 	})
 
 	t.Run("Return 401 for bad username or password", func(t *testing.T) {
-		handler := alice.New(
-			middlewares.DatabaseMiddleware,
-		).Then(middlewares.RunAPI(controllers.AuthenticationController{}.CreateToken))
-
-		testServer := httptest.NewServer(handler)
-		defer testServer.Close()
-
-		client := &http.Client{}
-
-		var u bytes.Buffer
-		u.WriteString(string(testServer.URL))
-		u.WriteString("/authentication")
-
-		req, err := http.NewRequest("POST", u.String(), strings.NewReader(`{"username":"test_user","password":"password"}`))
+		req, err := http.NewRequest("POST", url, strings.NewReader(`{"username":"test_user","password":"password"}`))
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -126,6 +103,54 @@ func TestAuthenticationController_CreateToken(t *testing.T) {
 		}
 
 		expected := `{"error":"Incorrect username or password"}`
+		if bodyStr != expected {
+			t.Errorf("expected %v, got %v", expected, bodyStr)
+			return
+		}
+	})
+
+	t.Run("Return 401 for disabled user", func(t *testing.T) {
+		req, err := http.NewRequest("POST", url, strings.NewReader(`{"username":"disabledreader","password":"readerpassword"}`))
+
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		bodyStr := strings.Trim(string(body), "\n")
+
+		if resp.StatusCode != http.StatusUnauthorized {
+			t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+			return
+		}
+
+		expected := `{"error":"user is disabled"}`
+		if bodyStr != expected {
+			t.Errorf("expected %v, got %v", expected, bodyStr)
+			return
+		}
+	})
+
+	t.Run("Return 401 for archived user", func(t *testing.T) {
+		req, err := http.NewRequest("POST", url, strings.NewReader(`{"username":"archivedreader","password":"readerpassword"}`))
+
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		bodyStr := strings.Trim(string(body), "\n")
+
+		if resp.StatusCode != http.StatusUnauthorized {
+			t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+			return
+		}
+
+		expected := `{"error":"user is archived"}`
 		if bodyStr != expected {
 			t.Errorf("expected %v, got %v", expected, bodyStr)
 			return

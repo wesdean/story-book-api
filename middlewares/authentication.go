@@ -60,6 +60,17 @@ func AuthenticationtMiddleware(h http.Handler) http.Handler {
 			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		if user.Disabled {
+			utils.EncodeJSONErrorWithLogging(r, w, "user is disabled", http.StatusUnauthorized)
+			return
+		}
+
+		if user.Archived {
+			utils.EncodeJSONErrorWithLogging(r, w, "user is archived", http.StatusUnauthorized)
+			return
+		}
+
 		authenticatedUser := &models.AuthenticatedUser{
 			User:      user,
 			Timestamp: int(timestamp),
