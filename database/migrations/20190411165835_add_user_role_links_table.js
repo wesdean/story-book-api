@@ -7,7 +7,7 @@ exports.up = function (knex, Promise) {
                     table.integer('user_role_id').notNullable();
                     table.text('resource_type').notNullable();
                     table.integer('resource_id').notNullable();
-                    table.primary(['user_id', 'user_role_id', 'resource_type', 'resource_id']);
+                    table.primary(['user_id', 'resource_type', 'resource_id']);
                     table.foreign('user_id').references('users.id').onDelete('cascade');
                     table.foreign('user_role_id').references('user_roles.id').onDelete('cascade');
                 });

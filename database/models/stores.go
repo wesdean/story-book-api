@@ -38,3 +38,7 @@ func GetStoresFromRequest(r *http.Request) (*Stores, error) {
 
 	return stores, nil
 }
+
+func (stores *Stores) Commit() error {
+	return stores.db.Commit()
+}

@@ -17,6 +17,9 @@ var netClient = &http.Client{
 	Timeout: time.Second * 10,
 }
 
+//todo Integration tests for forks
+//todo Acceptance tests for forks
+
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if testing.Short() {

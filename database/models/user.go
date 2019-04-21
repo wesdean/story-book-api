@@ -24,7 +24,7 @@ type User struct {
 }
 
 type AuthenticatedUser struct {
-	User      *User
+	*User
 	Timestamp int
 }
 

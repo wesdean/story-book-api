@@ -750,6 +750,169 @@ func TestForkStore_GetForks(t *testing.T) {
 		})
 
 	})
+
+	t.Run("Get forks by owner", func(t *testing.T) {
+		userId := 2
+
+		options := models.NewForkQueryOptions().Owner(userId)
+		forks, err := forkStore.GetForks(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 4
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by author", func(t *testing.T) {
+		userId := 3
+
+		options := models.NewForkQueryOptions().Author(userId)
+		forks, err := forkStore.GetForks(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 2
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by editor", func(t *testing.T) {
+		userId := 4
+
+		options := models.NewForkQueryOptions().Editor(userId)
+		forks, err := forkStore.GetForks(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 4
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by proofreader", func(t *testing.T) {
+		userId := 5
+
+		options := models.NewForkQueryOptions().Proofreader(userId)
+		forks, err := forkStore.GetForks(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 3
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by reader", func(t *testing.T) {
+		userId := 6
+
+		options := models.NewForkQueryOptions().Reader(userId)
+		forks, err := forkStore.GetForks(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 3
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 1
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by whether user can read", func(t *testing.T) {
+		t.Run("Get for super user", func(t *testing.T) {
+			userId := 1
+
+			options := models.NewForkQueryOptions().UserCanRead(userId)
+			forks, err := forkStore.GetForks(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 5
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			expected := 1
+			if forks[0].Id != expected {
+				t.Errorf("expected %v, got %v", expected, forks[0].Id)
+				return
+			}
+		})
+
+		t.Run("Get for reader", func(t *testing.T) {
+			userId := 6
+
+			options := models.NewForkQueryOptions().UserCanRead(userId)
+			forks, err := forkStore.GetForks(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 3
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			expected := 1
+			if forks[0].Id != expected {
+				t.Errorf("expected %v, got %v", expected, forks[0].Id)
+				return
+			}
+		})
+	})
 }
 
 func TestForkStore_GetFork(t *testing.T) {
@@ -758,21 +921,391 @@ func TestForkStore_GetFork(t *testing.T) {
 
 	forkId := 3
 	options := models.NewForkQueryOptions().Id(forkId)
-	forks, err := forkStore.GetForks(options)
+	forks, err := forkStore.GetFork(options)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	expectedCount := 1
-	if len(forks) != expectedCount {
-		t.Errorf("expected %v, got %v", expectedCount, len(forks))
+	expected := "Test Fork 2"
+	if forks.Title != expected {
+		t.Errorf("expected %v, got %v", expected, forks.Title)
+		return
+	}
+}
+
+func TestForkStore_GetForksWithBody(t *testing.T) {
+	seedDb()
+
+	forkStore := models.NewForkStore(db, logger)
+
+	t.Run("Get all forks", func(t *testing.T) {
+		forks, err := forkStore.GetForksWithBody(nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expected := 5
+		if len(forks) != expected {
+			t.Errorf("expected %v, got %v", expected, len(forks))
+			return
+		}
+
+		if forks[0].Body == "" {
+			t.Error("expected non-empty string, got empty string")
+			return
+		}
+	})
+
+	t.Run("Get forks by id", func(t *testing.T) {
+		forkId := 3
+		options := models.NewForkQueryOptions().Id(forkId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := "Test Fork 2"
+		if forks[0].Title != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Title)
+			return
+		}
+	})
+
+	t.Run("Get forks by title", func(t *testing.T) {
+		options := models.NewForkQueryOptions().Title("Fork 1")
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 2
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 2
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by description", func(t *testing.T) {
+		options := models.NewForkQueryOptions().Description("me")
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 3
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by whether they are published", func(t *testing.T) {
+		t.Run("Is published", func(t *testing.T) {
+			options := models.NewForkQueryOptions().IsPublished(true)
+			forks, err := forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 2
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			expected := 2
+			if forks[0].Id != expected {
+				t.Errorf("expected %v, got %v", expected, forks[0].Id)
+				return
+			}
+		})
+
+		t.Run("Is not published", func(t *testing.T) {
+			options := models.NewForkQueryOptions().IsPublished(false)
+			forks, err := forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 3
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			expected := 1
+			if forks[0].Id != expected {
+				t.Errorf("expected %v, got %v", expected, forks[0].Id)
+				return
+			}
+		})
+	})
+
+	t.Run("Get forks by when they were published", func(t *testing.T) {
+		t.Run("Start date only", func(t *testing.T) {
+			publishedStart, err := time.Parse("2006-01-02", "2019-03-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			options := models.NewForkQueryOptions().PublishedStart(publishedStart)
+			forks, err := forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 2
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			publishedStart, err = time.Parse("2006-01-02", "2019-04-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			options = models.NewForkQueryOptions().PublishedStart(publishedStart)
+			forks, err = forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount = 1
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+		})
+
+		t.Run("End date only", func(t *testing.T) {
+			publishedEnd, err := time.Parse("2006-01-02", "2019-05-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			options := models.NewForkQueryOptions().PublishedEnd(publishedEnd)
+			forks, err := forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 2
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+
+			publishedStart, err := time.Parse("2006-01-02", "2019-04-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			options = models.NewForkQueryOptions().PublishedStart(publishedStart)
+			forks, err = forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount = 1
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+		})
+
+		t.Run("Start and end date", func(t *testing.T) {
+			publishedStart, err := time.Parse("2006-01-02", "2019-03-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			publishedEnd, err := time.Parse("2006-01-02", "2019-04-01")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			options := models.NewForkQueryOptions().Published(publishedStart, publishedEnd)
+			forks, err := forkStore.GetForksWithBody(options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			expectedCount := 1
+			if len(forks) != expectedCount {
+				t.Errorf("expected %v, got %v", expectedCount, len(forks))
+				return
+			}
+		})
+
+	})
+
+	t.Run("Get forks by owner", func(t *testing.T) {
+		userId := 2
+
+		options := models.NewForkQueryOptions().Owner(userId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 4
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by author", func(t *testing.T) {
+		userId := 3
+
+		options := models.NewForkQueryOptions().Author(userId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 2
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by editor", func(t *testing.T) {
+		userId := 4
+
+		options := models.NewForkQueryOptions().Editor(userId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 4
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by proofreader", func(t *testing.T) {
+		userId := 5
+
+		options := models.NewForkQueryOptions().Proofreader(userId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 1
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 3
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+
+	t.Run("Get forks by reader", func(t *testing.T) {
+		userId := 6
+
+		options := models.NewForkQueryOptions().Reader(userId)
+		forks, err := forkStore.GetForksWithBody(options)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		expectedCount := 3
+		if len(forks) != expectedCount {
+			t.Errorf("expected %v, got %v", expectedCount, len(forks))
+			return
+		}
+
+		expected := 1
+		if forks[0].Id != expected {
+			t.Errorf("expected %v, got %v", expected, forks[0].Id)
+			return
+		}
+	})
+}
+
+func TestForkStore_GetForkWithBody(t *testing.T) {
+	forkStore := models.NewForkStore(db, logger)
+	seedDb()
+
+	forkId := 3
+	options := models.NewForkQueryOptions().Id(forkId)
+	fork, err := forkStore.GetForkWithBody(options)
+	if err != nil {
+		t.Error(err)
 		return
 	}
 
 	expected := "Test Fork 2"
-	if forks[0].Title != expected {
-		t.Errorf("expected %v, got %v", expected, forks[0].Title)
+	if fork.Title != expected {
+		t.Errorf("expected %v, got %v", expected, fork.Title)
+		return
+	}
+
+	if fork.Body == "" {
+		t.Error("expected non-empty string, got empty string")
 		return
 	}
 }
@@ -841,4 +1374,232 @@ func TestFork_Validate(t *testing.T) {
 			return
 		}
 	})
+}
+
+func TestForkStore_UserCanCreate(t *testing.T) {
+	seedDb()
+
+	forkStore := models.NewForkStore(db, logger)
+
+	superuser, err := forkStore.UserCanCreate(1, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !superuser {
+		t.Error("Superuser should be able to create")
+		return
+	}
+
+	owner, err := forkStore.UserCanCreate(2, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !owner {
+		t.Error("Owner should be able to create")
+		return
+	}
+
+	author, err := forkStore.UserCanCreate(3, 2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !author {
+		t.Error("Author should be able to create")
+		return
+	}
+
+	editor, err := forkStore.UserCanCreate(4, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if editor {
+		t.Error("Editor should not be able to create")
+		return
+	}
+
+	proofreader, err := forkStore.UserCanCreate(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if proofreader {
+		t.Error("Proofreader should not be able to create")
+		return
+	}
+
+	reader, err := forkStore.UserCanCreate(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if reader {
+		t.Error("Reader should not be able to create")
+		return
+	}
+
+	noPerms, err := forkStore.UserCanCreate(-1, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if noPerms {
+		t.Error("User without permissions should not be able to create")
+		return
+	}
+}
+
+func TestForkStore_UserCanUpdate(t *testing.T) {
+	seedDb()
+
+	forkStore := models.NewForkStore(db, logger)
+
+	superuser, err := forkStore.UserCanCreate(1, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !superuser {
+		t.Error("Superuser should be able to update")
+		return
+	}
+
+	owner, err := forkStore.UserCanUpdate(2, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !owner {
+		t.Error("Owner should be able to update")
+		return
+	}
+
+	author, err := forkStore.UserCanUpdate(3, 2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !author {
+		t.Error("Author should be able to update")
+		return
+	}
+
+	editor, err := forkStore.UserCanUpdate(4, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !editor {
+		t.Error("Editor should be able to update")
+		return
+	}
+
+	proofreader, err := forkStore.UserCanUpdate(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if proofreader {
+		t.Error("Proofreader should not be able to update")
+		return
+	}
+
+	reader, err := forkStore.UserCanUpdate(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if reader {
+		t.Error("Reader should not be able to update")
+		return
+	}
+
+	noPerms, err := forkStore.UserCanUpdate(-1, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if noPerms {
+		t.Error("User without permissions should not be able to create")
+		return
+	}
+}
+
+func TestForkStore_UserCanDelete(t *testing.T) {
+	seedDb()
+
+	forkStore := models.NewForkStore(db, logger)
+
+	superuser, err := forkStore.UserCanDelete(1, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !superuser {
+		t.Error("Superuser should be able to delete")
+		return
+	}
+
+	owner, err := forkStore.UserCanDelete(2, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !owner {
+		t.Error("Owner should be able to delete")
+		return
+	}
+
+	author, err := forkStore.UserCanDelete(3, 2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !author {
+		t.Error("Author should be able to delete")
+		return
+	}
+
+	editor, err := forkStore.UserCanDelete(4, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if editor {
+		t.Error("Editor should not be able to delete")
+		return
+	}
+
+	proofreader, err := forkStore.UserCanDelete(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if proofreader {
+		t.Error("Proofreader should not be able to delete")
+		return
+	}
+
+	reader, err := forkStore.UserCanDelete(5, 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if reader {
+		t.Error("Reader should not be able to delete")
+		return
+	}
+
+	noPerms, err := forkStore.UserCanDelete(-1, 4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if noPerms {
+		t.Error("User without permissions should not be able to delete")
+		return
+	}
 }

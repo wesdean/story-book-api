@@ -5,17 +5,34 @@ import (
 	"testing"
 )
 
-func TestUserRoleLinkStore_GetLinksForUser(t *testing.T) {
+func TestUserRoleLinkStore_GetLinksForUserByResourceType(t *testing.T) {
 	seedDb()
 
 	userRoleLinkStore := models.NewUserRoleLinkStore(db, logger)
-	links, err := userRoleLinkStore.GetLinksForUser(2)
+	links, err := userRoleLinkStore.GetLinksForUserByResourceType(2, "fork")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	expected := 1
+	if len(links.Links) != expected {
+		t.Errorf("expected %v, got %v", expected, len(links.Links))
+		return
+	}
+}
+
+func TestUserRoleLinkStore_GetLinksForResource(t *testing.T) {
+	seedDb()
+
+	userRoleLinkStore := models.NewUserRoleLinkStore(db, logger)
+	links, err := userRoleLinkStore.GetLinksForResource("fork", 3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expected := 2
 	if len(links.Links) != expected {
 		t.Errorf("expected %v, got %v", expected, len(links.Links))
 		return
@@ -30,7 +47,7 @@ func TestUserRoleLinkStore_CreateLinks(t *testing.T) {
 
 	userRoleLinkStore := models.NewUserRoleLinkStore(db, logger)
 	var links *models.UserRoleLinks
-	links, err = userRoleLinkStore.GetLinksForUser(userId)
+	links, err = userRoleLinkStore.GetLinksForUserByResourceType(userId, "fork")
 	if err != nil {
 		t.Error(err)
 		return
@@ -47,8 +64,8 @@ func TestUserRoleLinkStore_CreateLinks(t *testing.T) {
 			{
 				UserId:       userId,
 				RoleId:       1,
-				ResourceType: "application",
-				ResourceId:   0,
+				ResourceType: "fork",
+				ResourceId:   1,
 			},
 		})
 	if err != nil {
@@ -56,7 +73,7 @@ func TestUserRoleLinkStore_CreateLinks(t *testing.T) {
 		return
 	}
 
-	links, err = userRoleLinkStore.GetLinksForUser(userId)
+	links, err = userRoleLinkStore.GetLinksForUserByResourceType(userId, "fork")
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,6 +86,29 @@ func TestUserRoleLinkStore_CreateLinks(t *testing.T) {
 	}
 }
 
+func TestUserRoleLinkStore_CopyLinksForResource(t *testing.T) {
+	seedDb()
+
+	userRoleLinkStore := models.NewUserRoleLinkStore(db, logger)
+	err := userRoleLinkStore.CopyLinksForResource("fork", 3, 5)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	links, err := userRoleLinkStore.GetLinksForResource("fork", 5)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expected := 2
+	if len(links.Links) != expected {
+		t.Errorf("expected %v, got %v", expected, len(links.Links))
+		return
+	}
+}
+
 func TestUserRoleLinkStore_DeleteLinks(t *testing.T) {
 	var err error
 	seedDb()
@@ -77,7 +117,7 @@ func TestUserRoleLinkStore_DeleteLinks(t *testing.T) {
 
 	userRoleLinkStore := models.NewUserRoleLinkStore(db, logger)
 	var links *models.UserRoleLinks
-	links, err = userRoleLinkStore.GetLinksForUser(userId)
+	links, err = userRoleLinkStore.GetLinksForUserByResourceType(userId, "fork")
 	if err != nil {
 		t.Error(err)
 		return
@@ -95,7 +135,7 @@ func TestUserRoleLinkStore_DeleteLinks(t *testing.T) {
 				UserId:       userId,
 				RoleId:       3,
 				ResourceType: "fork",
-				ResourceId:   0,
+				ResourceId:   2,
 			},
 		})
 	if err != nil {
@@ -103,7 +143,7 @@ func TestUserRoleLinkStore_DeleteLinks(t *testing.T) {
 		return
 	}
 
-	links, err = userRoleLinkStore.GetLinksForUser(userId)
+	links, err = userRoleLinkStore.GetLinksForUserByResourceType(userId, "fork")
 	if err != nil {
 		t.Error(err)
 		return

@@ -18,12 +18,14 @@ values (/*1*/'superuser', 'Superuser', 'Like Superman only awesomer'),
        (/*6*/'reader', 'Reader', 'Reader of a resource');
 
 insert into user_role_links (user_id, user_role_id, resource_type, resource_id)
-values (1, 1, 'application', 0),
-       (2, 2, 'fork', 0),
-       (3, 3, 'fork', 0),
-       (4, 4, 'fork', 0),
-       (5, 5, 'fork', 0),
-       (6, 6, 'fork', 0);
+values (1, 1, 'fork', 0),
+       (2, 2, 'fork', 4),
+       (3, 3, 'fork', 2),
+       (4, 4, 'fork', 4),
+       (5, 5, 'fork', 3),
+       (6, 6, 'fork', 1),
+       (6, 6, 'fork', 2),
+       (6, 6, 'fork', 3);
 
 insert into forks (parent_id, creator_id, title, description, body, published, created_at, updated_at)
 values (/*1*/ 0, 1, 'Test Story 1', 'This is a test story', 'Testing 1, 2, blah, blah...', null, '2019-03-01 16:47:32',

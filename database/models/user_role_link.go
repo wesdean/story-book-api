@@ -45,6 +45,18 @@ func (store *UserRoleLinkStore) CreateLinks(roleLinks []UserRoleLink) error {
 	return nil
 }
 
+func (store *UserRoleLinkStore) CopyLinksForResource(resourceType string, fromResourceId, toResourceId int) error {
+	sqlQuery := `insert into user_role_links (user_id, user_role_id, resource_type, resource_id)
+		(select user_id, user_role_id, resource_type, $1 from user_role_links
+		where resource_type = $2 and resource_id = $3)`
+	_, err := store.db.Tx.Exec(sqlQuery, toResourceId, resourceType, fromResourceId)
+	if err != nil {
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to copy user role links: %s", err.Error())
+		return err
+	}
+	return nil
+}
+
 func (store *UserRoleLinkStore) DeleteLinks(roleLinks []UserRoleLink) error {
 	var whereStr []string
 	var params []interface{}
@@ -66,9 +78,38 @@ func (store *UserRoleLinkStore) DeleteLinks(roleLinks []UserRoleLink) error {
 	return nil
 }
 
-func (store *UserRoleLinkStore) GetLinksForUser(userId int) (*UserRoleLinks, error) {
-	sqlQuery := `select user_id, user_role_id, resource_type, resource_id from user_role_links where user_id = $1`
-	rows, err := store.db.Tx.Query(sqlQuery, userId)
+func (store *UserRoleLinkStore) GetLinksForUserByResourceType(userId int, resourceType string) (*UserRoleLinks, error) {
+	sqlQuery := `select user_id, user_role_id, resource_type, resource_id 
+		from user_role_links 
+		where user_id = $1 and resource_type = $2`
+	rows, err := store.db.Tx.Query(sqlQuery, userId, resourceType)
+	if err != nil {
+		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to retrieve user role links: %s", err.Error())
+		return nil, err
+	}
+
+	userRoleLinks := &UserRoleLinks{}
+	for rows.Next() {
+		link := UserRoleLink{}
+		err = rows.Scan(
+			&link.UserId,
+			&link.RoleId,
+			&link.ResourceType,
+			&link.ResourceId)
+		if err != nil {
+			logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to scan user role link: %s", err.Error())
+			return nil, err
+		}
+		userRoleLinks.Links = append(userRoleLinks.Links, link)
+	}
+	return userRoleLinks, err
+}
+
+func (store *UserRoleLinkStore) GetLinksForResource(resourceType string, resourceId int) (*UserRoleLinks, error) {
+	sqlQuery := `select user_id, user_role_id, resource_type, resource_id 
+		from user_role_links 
+		where resource_type = $1 and resource_id = $2`
+	rows, err := store.db.Tx.Query(sqlQuery, resourceType, resourceId)
 	if err != nil {
 		logging.Logf(store.logger, logging.LOGLEVEL_ERROR, "failed to retrieve user role links: %s", err.Error())
 		return nil, err

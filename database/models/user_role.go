@@ -31,6 +31,13 @@ type UserRoleQueryOptions struct {
 	description    string
 }
 
+const USER_ROLE_SUPER = 1
+const USER_ROLE_OWNER = 2
+const USER_ROLE_AUTHOR = 3
+const USER_ROLE_EDITOR = 4
+const USER_ROLE_PROOF = 5
+const USER_ROLE_READER = 6
+
 func NewUserRoleQueryOptions() *UserRoleQueryOptions {
 	return &UserRoleQueryOptions{}
 }
