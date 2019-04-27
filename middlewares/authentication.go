@@ -81,14 +81,3 @@ func AuthenticationtMiddleware(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 	})
 }
-
-func GetAuthenticatedUserFromRequest(r *http.Request) *models.AuthenticatedUser {
-	authUserContext, ok := context.GetOk(r, "AuthenticatedUser")
-	if ok {
-		authUser, ok := authUserContext.(*models.AuthenticatedUser)
-		if ok {
-			return authUser
-		}
-	}
-	return nil
-}

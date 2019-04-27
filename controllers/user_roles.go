@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/wesdean/story-book-api/database/models"
+	"github.com/wesdean/story-book-api/middlewares"
 	"github.com/wesdean/story-book-api/utils"
 	"net/http"
 	"strconv"
@@ -14,6 +15,11 @@ type UserRolesResponse struct {
 }
 
 func (controller UserRolesController) Index(w http.ResponseWriter, r *http.Request) {
+	if !middlewares.IsUserAuthenticated(r) {
+		middlewares.UnauthorizedResponse(w, r)
+		return
+	}
+
 	queryParams := r.URL.Query()
 	paramId, err := strconv.Atoi(queryParams.Get("id"))
 	if err != nil {

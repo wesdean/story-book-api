@@ -21,6 +21,10 @@ type ForksControllerForksResponse struct {
 	Forks []*models.Fork
 }
 
+type ForksControllerForkResponse struct {
+	Fork *models.Fork
+}
+
 type ForksControllerForksWithBodyResponse struct {
 	Forks []*models.ForkWithBody
 }
@@ -232,7 +236,7 @@ func (controller ForksController) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	canCreate, err := stores.ForkStore.UserCanCreate(authenticatedUser.Id, fork.ParentId)
+	canCreate, err := stores.ForkStore.UserCanCreate(authenticatedUser.Id, int(fork.ParentId.ValueOrZero()))
 	if err != nil {
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
@@ -250,7 +254,7 @@ func (controller ForksController) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if fork.ParentId == 0 {
+	if fork.ParentId.ValueOrZero() == 0 {
 		links := []models.UserRoleLink{
 			{
 				UserId:       fork.CreatorId,
@@ -265,7 +269,7 @@ func (controller ForksController) Create(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	} else {
-		err = stores.UserRoleLinkStore.CopyLinksForResource("fork", fork.ParentId, fork.Id)
+		err = stores.UserRoleLinkStore.CopyLinksForResource("fork", int(fork.ParentId.ValueOrZero()), fork.Id)
 		if err != nil {
 			utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 			return
@@ -277,7 +281,9 @@ func (controller ForksController) Create(w http.ResponseWriter, r *http.Request)
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	utils.EncodeJSON(w, fork)
+
+	response := ForksControllerForkResponse{Fork: fork}
+	utils.EncodeJSONWithStatus(w, response, http.StatusCreated)
 }
 
 func (controller ForksController) Update(w http.ResponseWriter, r *http.Request) {
@@ -327,7 +333,9 @@ func (controller ForksController) Update(w http.ResponseWriter, r *http.Request)
 		utils.EncodeJSONErrorWithLogging(r, w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	utils.EncodeJSON(w, fork)
+
+	response := ForksControllerForkResponse{Fork: fork}
+	utils.EncodeJSON(w, response)
 }
 
 func (controller ForksController) Delete(w http.ResponseWriter, r *http.Request) {

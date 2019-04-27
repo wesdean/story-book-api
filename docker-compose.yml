@@ -31,3 +31,5 @@ services:
       - 5432:5432
     networks:
       - story-book
+    volumes:
+      - "./database/migrations:/migrations"

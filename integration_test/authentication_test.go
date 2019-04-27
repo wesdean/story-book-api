@@ -43,7 +43,7 @@ func TestAuthentication(t *testing.T) {
 			}
 		})
 
-		t.Run("Return EOF when body is empty", func(t *testing.T) {
+		t.Run("Return error when body is empty", func(t *testing.T) {
 			seedDb()
 
 			resp, err := http.Post(baseUrl, "application/json", nil)
@@ -60,7 +60,7 @@ func TestAuthentication(t *testing.T) {
 				return
 			}
 
-			expected := `{"error":"EOF"}`
+			expected := `{"error":"invalid request body"}`
 			if bodyStr != expected {
 				t.Errorf("expected %v, got %v", expected, bodyStr)
 				return

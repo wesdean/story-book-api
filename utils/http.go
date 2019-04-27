@@ -15,6 +15,11 @@ func EncodeJSON(w http.ResponseWriter, output interface{}) {
 	}
 }
 
+func EncodeJSONWithStatus(w http.ResponseWriter, output interface{}, status int) {
+	w.WriteHeader(status)
+	EncodeJSON(w, output)
+}
+
 func EncodeJSONError(w http.ResponseWriter, errorMessage string, errorCode int) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(errorCode)

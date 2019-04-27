@@ -14,7 +14,7 @@ type ForkStore struct {
 
 type Fork struct {
 	Id          int
-	ParentId    int
+	ParentId    null.Int
 	CreatorId   int
 	Title       string
 	Description string
@@ -178,9 +178,11 @@ func (options *ForkQueryOptions) UserCanRead(userId int) *ForkQueryOptions {
 var getForksCommonQuery = `
 from forks
 left join user_role_links as links 
-	on (links.resource_type = 'fork' and (links.resource_id = 0 or links.resource_id = forks.id))
+	on (links.resource_type = 'fork' and (links.resource_id is null or links.resource_id = forks.id))
 where ($1 = false or ($1 = true and id = $2))
-	and ($3 = false or ($3 = true and forks.parent_id = $4))
+	and ($3 = false or ($3 = true and (
+		($4 <> 0 and forks.parent_id = $4) or ($4 = 0 and forks.parent_id is null)
+	)))
 	and ($5 = false or ($5 = true and forks.creator_id = $6))
 	and ($7 = false or ($7 = true and lower(forks.title) like lower('%' || $8 || '%')))
 	and ($9 = false or ($9 = true and lower(forks.description) like lower('%' || $10 || '%')))
@@ -432,14 +434,19 @@ func (store *ForkStore) ValidateFork(fork *Fork) error {
 	}
 
 	var count int
-	sqlQuery := `select count(id) from forks where parent_id = $1 and creator_id = $2 and title = $3 and id <> $4`
-	err = store.db.Tx.QueryRow(sqlQuery, fork.ParentId, fork.CreatorId, fork.Title, fork.Id).Scan(&count)
+	if fork.ParentId.ValueOrZero() == 0 {
+		sqlQuery := `select count(id) from forks where parent_id is null and creator_id = $1 and title = $2 and id <> $3`
+		err = store.db.Tx.QueryRow(sqlQuery, fork.CreatorId, fork.Title, fork.Id).Scan(&count)
+	} else {
+		sqlQuery := `select count(id) from forks where parent_id = $1 and creator_id = $2 and title = $3 and id <> $4`
+		err = store.db.Tx.QueryRow(sqlQuery, fork.ParentId, fork.CreatorId, fork.Title, fork.Id).Scan(&count)
+	}
 	if err != nil {
 		return err
 	}
 
 	if count > 0 {
-		return errors.New("duplicate key forks_parent_id_creator_id_title_unique")
+		return errors.New("duplicate key")
 	}
 
 	return nil

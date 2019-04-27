@@ -17,7 +17,6 @@ var netClient = &http.Client{
 	Timeout: time.Second * 10,
 }
 
-//todo Integration tests for forks
 //todo Acceptance tests for forks
 
 func TestMain(m *testing.M) {
@@ -81,36 +80,52 @@ func setupEnvironment() {
 	}
 }
 
-func seedDb() {
-	var err error
-
+func openDB() *database.Database {
 	db, err := database.NewDatabase(nil)
+
 	err = db.Begin()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return nil
+	}
+	return db
+}
+
+func closeDB(db *database.Database) {
+	if db == nil {
+		return
+	}
+
+	err := db.Commit()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 		return
 	}
+
+	err = db.GetDB().Close()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return
+	}
+
+	db = nil
+}
+
+func seedDb() {
+	db := openDB()
+	defer closeDB(db)
 
 	sqlFile, err := ioutil.ReadFile("../database/sql/test_seed_integration.sql")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+		return
 	}
 
 	_, err = db.Tx.Exec(string(sqlFile))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	err = db.Commit()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
-	err = db.GetDB().Close()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

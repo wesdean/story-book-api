@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"github.com/wesdean/story-book-api/database/models"
+	"gopkg.in/guregu/null.v3"
 	"strings"
 	"testing"
 	"time"
@@ -43,7 +44,21 @@ func TestForkStore_CreateFork(t *testing.T) {
 			return
 		}
 
-		expected := `duplicate key forks_parent_id_creator_id_title_unique`
+		expected := `duplicate key`
+		if !strings.Contains(err.Error(), expected) {
+			t.Errorf("expected to contain %v, got %v", expected, err.Error())
+			return
+		}
+
+		fork.ParentId = null.IntFrom(1)
+		fork.Title = "Test Fork 1"
+		err = forkStore.CreateFork(fork)
+		if err == nil {
+			t.Error("expected an duplicate key error, got none")
+			return
+		}
+
+		expected = `duplicate key`
 		if !strings.Contains(err.Error(), expected) {
 			t.Errorf("expected to contain %v, got %v", expected, err.Error())
 			return
@@ -147,7 +162,7 @@ func TestForkStore_UpdateFork(t *testing.T) {
 
 		updateFork := models.Fork{
 			Id:        1,
-			ParentId:  0,
+			ParentId:  null.NewInt(0, false),
 			CreatorId: 2,
 			Title:     "Test Story 2",
 		}
