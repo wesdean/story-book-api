@@ -460,7 +460,7 @@ func (store *ForkStore) UserCanCreate(userId, forkId int) (bool, error) {
 	sqlQuery := `select count(*) from user_role_links
 		where user_id = $1
 		and resource_type = 'fork'
-		and resource_id in (0, $2)
+		and (resource_id = $2 or resource_id is null)
 		and user_role_id in ($3, $4, $5)`
 	var count int
 	err := store.db.Tx.QueryRow(sqlQuery,
@@ -484,7 +484,7 @@ func (store *ForkStore) UserCanUpdate(userId, forkId int) (bool, error) {
 	sqlQuery := `select count(*) from user_role_links
 		where user_id = $1
 		and resource_type = 'fork'
-		and resource_id in (0, $2)
+		and (resource_id = $2 or resource_id is null)
 		and user_role_id in ($3, $4, $5, $6)`
 	var count int
 	err := store.db.Tx.QueryRow(sqlQuery,
@@ -509,7 +509,7 @@ func (store *ForkStore) UserCanDelete(userId, forkId int) (bool, error) {
 	sqlQuery := `select count(*) from user_role_links
 		where user_id = $1
 		and resource_type = 'fork'
-		and resource_id in (0, $2)
+		and (resource_id = $2 or resource_id is null)
 		and user_role_id in ($3, $4, $5)`
 	var count int
 	err := store.db.Tx.QueryRow(sqlQuery,

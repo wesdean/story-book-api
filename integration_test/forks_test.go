@@ -672,6 +672,472 @@ func TestForks(t *testing.T) {
 					return
 				}
 			})
+
+			t.Run("Can create fork from owned fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 4, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				var forkResp controllers.ForksControllerForkResponse
+				err = json.Unmarshal(body, &forkResp)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				expectedId := 10
+				if forkResp.Fork.Id != expectedId {
+					t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from unowned fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 8, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+		})
+
+		t.Run("As author", func(t *testing.T) {
+			userId := 3
+			token, err := utils.CreateJWTToken(
+				jwt.MapClaims{"user_id": userId},
+				[]byte(os.Getenv("AUTH_SECRET")),
+			)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			t.Run("Can create top-level fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				db := openDB()
+				defer closeDB(db)
+				forkStore := models.NewForkStore(db, nil)
+				fork, err := forkStore.GetFork(models.NewForkQueryOptions().Id(10))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if fork == nil {
+					t.Error("expected fork, got nil")
+					return
+				}
+			})
+
+			t.Run("Can create fork from owned fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 2, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				var forkResp controllers.ForksControllerForkResponse
+				err = json.Unmarshal(body, &forkResp)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				expectedId := 10
+				if forkResp.Fork.Id != expectedId {
+					t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from unowned fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 7, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+		})
+
+		t.Run("As editor", func(t *testing.T) {
+			userId := 4
+			token, err := utils.CreateJWTToken(
+				jwt.MapClaims{"user_id": userId},
+				[]byte(os.Getenv("AUTH_SECRET")),
+			)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			t.Run("Can create top-level fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				db := openDB()
+				defer closeDB(db)
+				forkStore := models.NewForkStore(db, nil)
+				fork, err := forkStore.GetFork(models.NewForkQueryOptions().Id(10))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if fork == nil {
+					t.Error("expected fork, got nil")
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from edited fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 4, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from unowned fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 7, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+		})
+
+		t.Run("As proofreader", func(t *testing.T) {
+			userId := 5
+			token, err := utils.CreateJWTToken(
+				jwt.MapClaims{"user_id": userId},
+				[]byte(os.Getenv("AUTH_SECRET")),
+			)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			t.Run("Can create top-level fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				db := openDB()
+				defer closeDB(db)
+				forkStore := models.NewForkStore(db, nil)
+				fork, err := forkStore.GetFork(models.NewForkQueryOptions().Id(10))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if fork == nil {
+					t.Error("expected fork, got nil")
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from proofread fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 4, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from unproofread fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 7, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+		})
+
+		t.Run("As reader", func(t *testing.T) {
+			userId := 6
+			token, err := utils.CreateJWTToken(
+				jwt.MapClaims{"user_id": userId},
+				[]byte(os.Getenv("AUTH_SECRET")),
+			)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			t.Run("Can create top-level fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusCreated {
+					t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
+					return
+				}
+
+				db := openDB()
+				defer closeDB(db)
+				forkStore := models.NewForkStore(db, nil)
+				fork, err := forkStore.GetFork(models.NewForkQueryOptions().Id(10))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if fork == nil {
+					t.Error("expected fork, got nil")
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from read fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 4, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
+
+			t.Run("Cannot create fork from unread fork", func(t *testing.T) {
+				seedDb()
+
+				req, err := http.NewRequest("POST", baseUrl, strings.NewReader(`{"ParentId": 7, "Title": "Newly Created Fork", "Description": "This is a fork!"}`))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				req.Header.Set("Authorization", token)
+				resp, err := netClient.Do(req)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				body, _ := ioutil.ReadAll(resp.Body)
+				bodyStr := strings.Trim(string(body), "\n")
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Errorf("expected %v, got %v\n%v", http.StatusUnauthorized, resp.StatusCode, bodyStr)
+					return
+				}
+			})
 		})
 	})
 	//todo Update fork tests

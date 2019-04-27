@@ -1,12 +1,13 @@
 truncate users restart identity cascade;
-insert into users (id, username, password, disabled, archived)
-values (1, 'admin', 'adminpassword', false, false),
-       (2, 'owner', 'ownerpassword', false, false),
-       (3, 'author', 'authorpassword', false, false),
-       (4, 'editor', 'editorpassword', false, false),
-       (5, 'reader', 'readerpassword', false, false),
-       (6, 'disabledreader', 'readerpassword', true, false),
-       (7, 'archivedreader', 'readerpassword', false, true);
+insert into users (username, password, disabled, archived)
+values (/*1*/'admin', 'adminpassword', false, false),
+       (/*2*/'owner', 'ownerpassword', false, false),
+       (/*3*/'author', 'authorpassword', false, false),
+       (/*4*/'editor', 'editorpassword', false, false),
+       (/*5*/'proofreader', 'proofreaderpassword', false, false),
+       (/*6*/'reader', 'readerpassword', false, false),
+       (/*7*/'disabledreader', 'readerpassword', true, false),
+       (/*8*/'archivedreader', 'readerpassword', false, true);
 
 truncate user_roles restart identity cascade;
 insert into user_roles (name, label, description)
@@ -19,7 +20,7 @@ values (/*1*/'superuser', 'Superuser', 'Like Superman only awesomer'),
 
 truncate user_role_links restart identity cascade;
 insert into user_role_links (user_id, user_role_id, resource_type, resource_id)
-values (1, 1, 'fork', 0),
+values (1, 1, 'fork', null),
        (2, 2, 'fork', 4),
        (3, 3, 'fork', 2),
        (4, 4, 'fork', 4),

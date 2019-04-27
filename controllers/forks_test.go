@@ -4957,28 +4957,28 @@ func TestForksController_Create(t *testing.T) {
 			body, _ := ioutil.ReadAll(resp.Body)
 			bodyStr := strings.Trim(string(body), "\n")
 
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("expected %v, got %v\n%v", http.StatusOK, resp.StatusCode, bodyStr)
+			if resp.StatusCode != http.StatusCreated {
+				t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
 			expectedId := 10
-			if fork.Id != expectedId {
-				t.Errorf("expected %v, got %v", expectedId, fork.Id)
+			if forkResp.Fork.Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
 				return
 			}
 
 			db := openDB()
 			defer closeDB(db)
 			userRoleLinksStore := models.NewUserRoleLinkStore(db, logger)
-			links, err := userRoleLinksStore.GetLinksForResource("fork", fork.Id)
+			links, err := userRoleLinksStore.GetLinksForResource("fork", forkResp.Fork.Id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -5011,28 +5011,28 @@ func TestForksController_Create(t *testing.T) {
 			body, _ := ioutil.ReadAll(resp.Body)
 			bodyStr := strings.Trim(string(body), "\n")
 
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("expected %v, got %v\n%v", http.StatusOK, resp.StatusCode, bodyStr)
+			if resp.StatusCode != http.StatusCreated {
+				t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
 			expectedId := 10
-			if fork.Id != expectedId {
-				t.Errorf("expected %v, got %v", expectedId, fork.Id)
+			if forkResp.Fork.Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
 				return
 			}
 
 			db := openDB()
 			defer closeDB(db)
 			userRoleLinksStore := models.NewUserRoleLinkStore(db, logger)
-			links, err := userRoleLinksStore.GetLinksForResource("fork", fork.Id)
+			links, err := userRoleLinksStore.GetLinksForResource("fork", forkResp.Fork.Id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -5103,28 +5103,28 @@ func TestForksController_Create(t *testing.T) {
 			body, _ := ioutil.ReadAll(resp.Body)
 			bodyStr := strings.Trim(string(body), "\n")
 
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("expected %v, got %v\n%v", http.StatusOK, resp.StatusCode, bodyStr)
+			if resp.StatusCode != http.StatusCreated {
+				t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
 			expectedId := 10
-			if fork.Id != expectedId {
-				t.Errorf("expected %v, got %v", expectedId, fork.Id)
+			if forkResp.Fork.Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
 				return
 			}
 
 			db := openDB()
 			defer closeDB(db)
 			userRoleLinksStore := models.NewUserRoleLinkStore(db, logger)
-			links, err := userRoleLinksStore.GetLinksForResource("fork", fork.Id)
+			links, err := userRoleLinksStore.GetLinksForResource("fork", forkResp.Fork.Id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -5221,28 +5221,28 @@ func TestForksController_Create(t *testing.T) {
 			body, _ := ioutil.ReadAll(resp.Body)
 			bodyStr := strings.Trim(string(body), "\n")
 
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("expected %v, got %v\n%v", http.StatusOK, resp.StatusCode, bodyStr)
+			if resp.StatusCode != http.StatusCreated {
+				t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
 			expectedId := 10
-			if fork.Id != expectedId {
-				t.Errorf("expected %v, got %v", expectedId, fork.Id)
+			if forkResp.Fork.Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
 				return
 			}
 
 			db := openDB()
 			defer closeDB(db)
 			userRoleLinksStore := models.NewUserRoleLinkStore(db, logger)
-			links, err := userRoleLinksStore.GetLinksForResource("fork", fork.Id)
+			links, err := userRoleLinksStore.GetLinksForResource("fork", forkResp.Fork.Id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -5339,28 +5339,28 @@ func TestForksController_Create(t *testing.T) {
 			body, _ := ioutil.ReadAll(resp.Body)
 			bodyStr := strings.Trim(string(body), "\n")
 
-			if resp.StatusCode != http.StatusOK {
-				t.Errorf("expected %v, got %v\n%v", http.StatusOK, resp.StatusCode, bodyStr)
+			if resp.StatusCode != http.StatusCreated {
+				t.Errorf("expected %v, got %v\n%v", http.StatusCreated, resp.StatusCode, bodyStr)
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
 			expectedId := 10
-			if fork.Id != expectedId {
-				t.Errorf("expected %v, got %v", expectedId, fork.Id)
+			if forkResp.Fork.Id != expectedId {
+				t.Errorf("expected %v, got %v", expectedId, forkResp.Fork.Id)
 				return
 			}
 
 			db := openDB()
 			defer closeDB(db)
 			userRoleLinksStore := models.NewUserRoleLinkStore(db, logger)
-			links, err := userRoleLinksStore.GetLinksForResource("fork", fork.Id)
+			links, err := userRoleLinksStore.GetLinksForResource("fork", forkResp.Fork.Id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -5528,15 +5528,15 @@ func TestForksController_Update(t *testing.T) {
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
-			if fork.Title != title {
-				t.Errorf("expected %v, got %v", title, fork.Title)
+			if forkResp.Fork.Title != title {
+				t.Errorf("expected %v, got %v", title, forkResp.Fork.Title)
 				return
 			}
 		})
@@ -5567,15 +5567,15 @@ func TestForksController_Update(t *testing.T) {
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
-			if fork.Title != title {
-				t.Errorf("expected %v, got %v", title, fork.Title)
+			if forkResp.Fork.Title != title {
+				t.Errorf("expected %v, got %v", title, forkResp.Fork.Title)
 				return
 			}
 		})
@@ -5618,15 +5618,15 @@ func TestForksController_Update(t *testing.T) {
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
-			if fork.Title != title {
-				t.Errorf("expected %v, got %v", title, fork.Title)
+			if forkResp.Fork.Title != title {
+				t.Errorf("expected %v, got %v", title, forkResp.Fork.Title)
 				return
 			}
 		})
@@ -5696,15 +5696,15 @@ func TestForksController_Update(t *testing.T) {
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
-			if fork.Title != title {
-				t.Errorf("expected %v, got %v", title, fork.Title)
+			if forkResp.Fork.Title != title {
+				t.Errorf("expected %v, got %v", title, forkResp.Fork.Title)
 				return
 			}
 		})
@@ -5774,15 +5774,15 @@ func TestForksController_Update(t *testing.T) {
 				return
 			}
 
-			var fork models.Fork
-			err = json.Unmarshal(body, &fork)
+			var forkResp controllers.ForksControllerForkResponse
+			err = json.Unmarshal(body, &forkResp)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 
-			if fork.Title != title {
-				t.Errorf("expected %v, got %v", title, fork.Title)
+			if forkResp.Fork.Title != title {
+				t.Errorf("expected %v, got %v", title, forkResp.Fork.Title)
 				return
 			}
 		})

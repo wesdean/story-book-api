@@ -20,7 +20,7 @@ values (/*1*/'superuser', 'Superuser', 'Like Superman only awesomer'),
 
 truncate user_role_links restart identity cascade;
 insert into user_role_links (user_id, user_role_id, resource_type, resource_id)
-values (1, 1, 'fork', 0),
+values (1, 1, 'fork', null),
        (2, 2, 'fork', 4),
        (3, 3, 'fork', 2),
        (4, 4, 'fork', 4),
